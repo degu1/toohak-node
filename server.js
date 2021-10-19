@@ -17,8 +17,8 @@ app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%",HTTP_PORT))
 });
 
-app.get("/api/bok", (req, res, next) => {
-    var sql = "select * from bok"
+app.get("/quizes", (req, res, next) => {
+    var sql = "select * from quizes"
     var params = []
     db.all(sql, params, (err, rows) => {
         if (err) {
@@ -27,41 +27,59 @@ app.get("/api/bok", (req, res, next) => {
         }
         res.json({
             "message":"success",
-            "bok":rows
+            "quizes":rows
         })
       });
 });
 
 
-app.get("/api/bok/:id", (req, res, next) => {
-    var sql = "select * from bok where bokId = ?"
-    var params = [req.params.id]
-    db.get(sql, params, (err, row) => {
+app.get("/quizes/:quizName", (req, res, next) => {
+    var sql = "select * from quizes where quizName = ?"
+    var params = [req.params.quizName]
+    db.all(sql, params, (err, row) => {
         if (err) {
           res.status(400).json({"error":err.message});
           return;
         }
         res.json({
             "message":"success",
-            "bok":row
+            "quizes":row
+        })
+      });
+});
+
+app.get("/quiznames/", (req, res, next) => {
+    var sql = "select DISTINCT quizName from quizes"
+    var params = [req.params.quizName]
+    db.all(sql, params, (err, row) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "quizes":row
         })
       });
 });
 
 
-app.post("/api/bok/", (req, res, next) => {
+app.post("/quizes/", (req, res, next) => {
     var errors=[]
-    if (!req.body.bokIsbn){
-        errors.push("Inget ISBN");
+    if (!req.body.quizName){
+        errors.push("No name");
     }
     var data = {
-        bokTitel: req.body.bokTitel,
-        bokForfattare: req.body.bokForfattare,
-        bokIsbn: req.body.bokIsbn,
-        bokPris: req.body.bokPris
+        quizName: req.body.quizName,
+        quizQuestion: req.body.quizQuestion,
+        quizCorrectanswer: req.body.quizCorrectanswer,
+        quizAnswer1: req.body.quizAnswer1,
+        quizAnswer2: req.body.quizAnswer2,
+        quizAnswer3: req.body.quizAnswer3,
+        quizAnswer4: req.body.quizAnswer4
     }
-    var sql ='INSERT INTO bok (bokTitel, bokForfattare, bokIsbn, bokPris) VALUES (?,?,?,?)'
-    var params =[data.bokTitel, data.bokForfattare, data.bokIsbn, data.bokPris]
+    var sql ='INSERT INTO quizes (quizName, quizQuestion, quizCorrectanswer, quizAnswer1, quizAnswer2, quizAnswer3, quizAnswer4) VALUES (?,?,?,?,?,?,?)'
+    var params =[data.quizName, data.quizQuestion, data.quizCorrectanswer, data.quizAnswer1, data.quizAnswer2, data.quizAnswer3, data.quizAnswer4]
     db.run(sql, params, function (err, result) {
         if (err){
             res.status(400).json({"error": err.message})
@@ -69,8 +87,7 @@ app.post("/api/bok/", (req, res, next) => {
         }
         res.json({
             "message": "success",
-            "bok": data,
-            "id" : this.lastID
+            "quiz": data
         })
     });
 })
