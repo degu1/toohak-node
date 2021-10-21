@@ -32,6 +32,36 @@ app.get("/quizes", (req, res, next) => {
       });
 });
 
+app.get("/questions/:quiz_id", (req, res, next) => {
+    var sql = "select * from questions where quiz_id = ?"
+    var params = [req.params.quiz_id]
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "questions":rows
+        })
+    });
+});
+
+app.get("/questions", (req, res, next) => {
+    var sql = "select * from questions"
+    var params = []
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "questions":rows
+        })
+    });
+});
+
 
 app.get("/quizes/:quizName", (req, res, next) => {
     var sql = "select * from quizes where quizName = ?"
@@ -66,20 +96,42 @@ app.get("/quiznames/", (req, res, next) => {
 
 app.post("/quizes/", (req, res, next) => {
     var errors=[]
-    if (!req.body.quizName){
+    if (!req.body.quiz_name){
         errors.push("No name");
     }
     var data = {
-        quizName: req.body.quizName,
-        quizQuestion: req.body.quizQuestion,
-        quizCorrectanswer: req.body.quizCorrectanswer,
-        quizAnswer1: req.body.quizAnswer1,
-        quizAnswer2: req.body.quizAnswer2,
-        quizAnswer3: req.body.quizAnswer3,
-        quizAnswer4: req.body.quizAnswer4
+        quiz_name: req.body.quiz_name
     }
-    var sql ='INSERT INTO quizes (quizName, quizQuestion, quizCorrectanswer, quizAnswer1, quizAnswer2, quizAnswer3, quizAnswer4) VALUES (?,?,?,?,?,?,?)'
-    var params =[data.quizName, data.quizQuestion, data.quizCorrectanswer, data.quizAnswer1, data.quizAnswer2, data.quizAnswer3, data.quizAnswer4]
+    var sql ='INSERT INTO quizes (quiz_name) VALUES (?)'
+    var params =[data.quiz_name]
+    db.run(sql, params, function (err, result) {
+        if (err){
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        res.json({
+            "message": "success",
+            "quiz": data
+        })
+    });
+})
+
+app.post("/questions/", (req, res, next) => {
+    var errors=[]
+    if (!req.body.question){
+        errors.push("No question");
+    }
+    var data = {
+        question: req.body.question,
+        correctanswer: req.body.correctanswer,
+        answer1: req.body.answer1,
+        answer2: req.body.answer2,
+        answer3: req.body.answer3,
+        answer4: req.body.answer4,
+        quiz_id: req.body.quiz_id
+    }
+    var sql ='INSERT INTO questions (question, correctanswer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
+    var params =[data.question, data.correctanswer, data.answer1, data.answer2, data.answer3, data.answer4, data.quiz_id]
     db.run(sql, params, function (err, result) {
         if (err){
             res.status(400).json({"error": err.message})
