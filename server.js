@@ -79,9 +79,9 @@ app.get("/quizes/:quizName", (req, res, next) => {
 });
 
 app.get("/quiznames/", (req, res, next) => {
-    var sql = "select DISTINCT quizName from quizes"
-    var params = [req.params.quizName]
-    db.all(sql, params, (err, row) => {
+    var sql = "select DISTINCT quiz_id, quiz_name from quizes"
+    // var params = [req.params.quiz_name]
+    db.all(sql, (err, row) => {
         if (err) {
           res.status(400).json({"error":err.message});
           return;
@@ -123,15 +123,15 @@ app.post("/questions/", (req, res, next) => {
     }
     var data = {
         question: req.body.question,
-        correctanswer: req.body.correctanswer,
+        correct_answer: req.body.correct_answer,
         answer1: req.body.answer1,
         answer2: req.body.answer2,
         answer3: req.body.answer3,
         answer4: req.body.answer4,
         quiz_id: req.body.quiz_id
     }
-    var sql ='INSERT INTO questions (question, correctanswer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
-    var params =[data.question, data.correctanswer, data.answer1, data.answer2, data.answer3, data.answer4, data.quiz_id]
+    var sql ='INSERT INTO questions (question, correct_answer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
+    var params =[data.question, data.correct_answer, data.answer1, data.answer2, data.answer3, data.answer4, data.quiz_id]
     db.run(sql, params, function (err, result) {
         if (err){
             res.status(400).json({"error": err.message})
