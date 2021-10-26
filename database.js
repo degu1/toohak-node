@@ -27,7 +27,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             CREATE TABLE questions (
             question_id INTEGER PRIMARY KEY,
             question TEXT,
-            correctanswer TEXT,
+            correct_answer TEXT,
             answer1 TEXT,
             answer2 TEXT,
             answer3 TEXT,
@@ -41,7 +41,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             }else{
                 console.log("in NOerr question")
                 // Table just created, creating some rows
-                var insertQuestions = 'INSERT INTO questions (question, correctanswer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
+                var insertQuestions = 'INSERT INTO questions (question, correct_answer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
                 db.run(insertQuestions, ["Hur mycket är 10x10?","100","120", "99", "101", "0",1])
                 db.run(insertQuestions, ["Hur mycket är 1x10?","10","12", "9", "103", "0",1])
                 db.run(insertQuestions, ["Hur mycket är 1x10?","10","12", "9", "103", "0",2])
