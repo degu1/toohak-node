@@ -32,6 +32,25 @@ app.get("/quizes", (req, res, next) => {
       });
 });
 
+app.get("/quizes/user/:user_id", (req, res, next) => {
+    var sql = `SELECT q.quiz_id, q.quiz_name FROM quizes q
+        INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
+        INNER JOIN classes c ON c.classes_id = cq.classes_id
+        INNER JOIN users_classes uc ON c.classes_id = uc.classes_id
+        where uc.user_id = ?`
+    var params = [req.params.user_id]
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "quizes":rows
+        })
+    });
+});
+
 app.get("/questions/:quiz_id", (req, res, next) => {
     var sql = "select * from questions where quiz_id = ?"
     var params = [req.params.quiz_id]
@@ -140,6 +159,28 @@ app.post("/questions/", (req, res, next) => {
         res.json({
             "message": "success",
             "quiz": data
+        })
+    });
+})
+
+app.post("/result/", (req, res, next) => {
+    var data = {
+        result: req.body.result,
+        question_id: req.body.question_id,
+        user_id: req.body.user_id
+    }
+    var sql ='INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
+    var params =[data.result, data.question_id, data.user_id]
+    db.run(sql, params, function (err, result) {
+        if (err){
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        res.json({
+            "message": "success",
+            "result": data.result,
+            "question_id": data.question_id,
+            "user_id": data.user_id
         })
     });
 })
