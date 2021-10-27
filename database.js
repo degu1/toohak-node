@@ -86,10 +86,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             FOREIGN KEY (quiz_id) REFERENCES quizes (quiz_id)
             )`,(err) => {
             if (err) {
-                console.log("in err question")
                 // Table already created
             }else{
-                console.log("in NOerr question")
                 // Table just created, creating some rows
                 var insertQuestions = 'INSERT INTO questions (question, correct_answer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
                 db.run(insertQuestions, ["Hur mycket är 10x10?","100","120", "99", "101", "0",1])
@@ -119,6 +117,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             result INTEGER,
             question_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
+            UNIQUE (question_id, user_id),
             FOREIGN KEY  (question_id) REFERENCES questions (question_id),
             FOREIGN KEY  (user_id) REFERENCES  users (user_id)
             )`,(err) => {
