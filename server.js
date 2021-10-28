@@ -47,7 +47,6 @@ app.get("/quizes/:quiz_id", (req, res, next) => {
     });
 });
 
-
 app.get("/quizes/user/:user_id", (req, res, next) => {
     var sql = `SELECT q.quiz_id, q.quiz_name FROM quizes q
         INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
@@ -82,9 +81,27 @@ app.get("/questions/:quiz_id", (req, res, next) => {
     });
 });
 
-app.get("/answers/:question_id", (req, res, next) => {
+/*app.get("/answers/:question_id", (req, res, next) => {
     var sql = "select * from answers where question_id = ?"
     var params = [req.params.question_id]
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success",
+            "answers": rows
+        })
+    });
+});*/
+
+app.get("/answers/:quiz_id", (req, res, next) => {
+    var sql = `SELECT q.question_id, a.answer
+    from questions q 
+    INNER JOIN answers a on a.question_id = q.question_id
+    where q.quiz_id = ?;`
+    var params = [req.params.quiz_id]
     db.all(sql, params, (err, rows) => {
         if (err) {
             res.status(400).json({"error": err.message});
