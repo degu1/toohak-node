@@ -33,11 +33,7 @@ app.get("/quizes", (req, res, next) => {
 });
 
 app.get("/quizes/:quiz_id", (req, res, next) => {
-    var sql =
-        `SELECT q.question_id, q.question, q.correct_answer, a.answer
-        FROM questions q
-        INNER JOIN answers a on a.question_id = q.question_id
-        where q.quiz_id = ?`
+    var sql = `SELECT * FROM quizes WHERE quizes.quiz_id = ?`
     var params = [req.params.quiz_id]
     db.all(sql, params, (err, rows) => {
         if (err) {
@@ -50,6 +46,7 @@ app.get("/quizes/:quiz_id", (req, res, next) => {
         })
     });
 });
+
 
 app.get("/quizes/user/:user_id", (req, res, next) => {
     var sql = `SELECT q.quiz_id, q.quiz_name FROM quizes q
