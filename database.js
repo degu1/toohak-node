@@ -78,10 +78,6 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             question_id INTEGER PRIMARY KEY,
             question TEXT,
             correct_answer TEXT,
-            answer1 TEXT,
-            answer2 TEXT,
-            answer3 TEXT,
-            answer4 TEXT,
             quiz_id INTEGER NOT NULL,
             FOREIGN KEY (quiz_id) REFERENCES quizes (quiz_id)
             )`,(err) => {
@@ -89,12 +85,40 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertQuestions = 'INSERT INTO questions (question, correct_answer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
-                db.run(insertQuestions, ["Hur mycket är 10x10?","100","120", "99", "101", "0",1])
-                db.run(insertQuestions, ["Hur mycket är 1x10?","10","12", "9", "103", "0",1])
-                db.run(insertQuestions, ["Hur mycket är 1x10?","10","12", "9", "103", "0",2])
+                var insertQuestions = 'INSERT INTO questions (question, correct_answer, quiz_id) VALUES (?,?,?)'
+                db.run(insertQuestions, ["Hur mycket är 10x10?","100",1])
+                db.run(insertQuestions, ["Hur mycket är 1x10?","10",1])
+                db.run(insertQuestions, ["Hur mycket är 10/2?","5",2])
             }
         })
+
+        db.run(`   
+            CREATE TABLE answers (
+            answer_id INTEGER PRIMARY KEY,
+            answer TEXT,
+            question_id INTEGER NOT NULL,
+            FOREIGN KEY (question_id) REFERENCES questions (question_id)
+            )`,(err) => {
+            if (err) {
+                // Table already created
+            }else{
+                // Table just created, creating some rows
+                var insertAnswer = 'INSERT INTO answers (answer, question_id) VALUES (?,?)'
+                db.run(insertAnswer, ["100",1])
+                db.run(insertAnswer, ["99",1])
+                db.run(insertAnswer, ["101",1])
+                db.run(insertAnswer, ["10",1])
+                db.run(insertAnswer, ["9",2])
+                db.run(insertAnswer, ["8",2])
+                db.run(insertAnswer, ["10",2])
+                db.run(insertAnswer, ["11",2])
+                db.run(insertAnswer, ["10",3])
+                db.run(insertAnswer, ["4",3])
+                db.run(insertAnswer, ["6",3])
+                db.run(insertAnswer, ["5",3])
+            }
+        })
+
         db.run(`CREATE TABLE classes_quizes (
             classes_quizes_id INTEGER PRIMARY KEY,
             quiz_id INTEGER NOT NULL,
