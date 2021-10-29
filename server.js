@@ -81,21 +81,6 @@ app.get("/questions/:quiz_id", (req, res, next) => {
     });
 });
 
-/*app.get("/answers/:question_id", (req, res, next) => {
-    var sql = "select * from answers where question_id = ?"
-    var params = [req.params.question_id]
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "answers": rows
-        })
-    });
-});*/
-
 app.get("/answers/:quiz_id", (req, res, next) => {
     var sql = `SELECT q.question_id, a.answer
     from questions q 
@@ -143,7 +128,6 @@ app.get("/answers", (req, res, next) => {
         })
     });
 });
-
 
 app.get("/quizes/:quizName", (req, res, next) => {
     var sql = "select * from quizes where quizName = ?"
@@ -247,44 +231,3 @@ app.post("/result/", (req, res, next) => {
         })
     });
 })
-
-app.put("/api/bok/:id", (req, res, next) => {
-    var data = {
-        bokTitel: req.body.bokTitel,
-        bokForfattare: req.body.bokForfattare,
-        bokIsbn: req.body.bokIsbn,
-        bokPris: req.body.bokPris
-    }
-    var sql = 'UPDATE bok SET bokTitel = ?, bokForfattare = ?, bokIsbn = ?, bokPris = ? WHERE bokId = ?'
-    var params = [data.bokTitel, data.bokForfattare, data.bokIsbn, data.bokPris, req.params.id]
-    db.run(sql, params, function (err, result) {
-        if (err) {
-            res.status(400).json({"error": err.message})
-            return;
-        }
-        res.json({
-            "message": "success",
-            "bok": data,
-            "id": this.lastID
-        })
-    });
-})
-
-app.delete("/api/bok/:id", (req, res, next) => {
-    db.run(
-        'DELETE FROM bok WHERE bokId = ?',
-        req.params.id,
-        function (err, result) {
-            if (err) {
-                res.status(400).json({"error": res.message})
-                return;
-            }
-            res.json({"message": "deleted", rows: this.changes})
-        });
-})
-
-// Root path
-app.get("/", (req, res, next) => {
-    res.json({"message": "Ok"})
-});
-
