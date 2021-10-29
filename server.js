@@ -82,7 +82,7 @@ app.get("/questions/:quiz_id", (req, res, next) => {
 });
 
 app.get("/answers/:quiz_id", (req, res, next) => {
-    var sql = `SELECT q.question_id, a.answer
+    var sql = `SELECT q.question_id, a.answer_id, a.answer
     from questions q 
     INNER JOIN answers a on a.question_id = q.question_id
     where q.quiz_id = ?;`
