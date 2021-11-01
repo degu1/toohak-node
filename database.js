@@ -21,10 +21,13 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertUsers = 'INSERT INTO users (user_email, user_ROLE, user_password, user_fullname) VALUES (?,?,?,?)'
-                db.run(insertUsers, ["dennis@email.com","student","password","Dennis"])
-                db.run(insertUsers, ["milad@email.com","student","password","Milad"])
-                db.run(insertUsers, ["jonas@email.com","student","password","Jonas"])
+                db.run(`INSERT INTO users 
+                        (user_email, user_ROLE, user_password, user_fullname) 
+                        VALUES 
+                        ("dennis@email.com","student","password","Dennis"),
+                        ("milad@email.com","student","password","Milad"),
+                        ("jonas@email.com","student","password","Jonas")
+                        `)
             }
         })
         db.run(`CREATE TABLE classes (
@@ -35,9 +38,12 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertClasses = 'INSERT INTO classes (classes_name) VALUES (?)'
-                db.run(insertClasses, ["Klass 1"])
-                db.run(insertClasses, ["Klass 2"])
+                db.run(`INSERT INTO classes 
+                        (classes_name)
+                        VALUES 
+                        ("Klass 1"),
+                        ("Klass 2")
+                        `)
             }
         })
         db.run(`CREATE TABLE users_classes (
@@ -51,11 +57,14 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertUsers_classes = 'INSERT INTO users_classes (classes_id, user_id) VALUES (?,?)'
-                db.run(insertUsers_classes, ["1", "1"])
-                db.run(insertUsers_classes, ["1", "2"])
-                db.run(insertUsers_classes, ["1", "3"])
-                db.run(insertUsers_classes, ["2", "3"])
+                db.run(`INSERT INTO users_classes 
+                        (classes_id, user_id) 
+                        VALUES 
+                        ("1", "1"),
+                        ("1", "2"),
+                        ("1", "3"),
+                        ("2", "3")
+                        `)
             }
         })
         db.run(`CREATE TABLE quizes (
@@ -67,9 +76,12 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertQuizes = 'INSERT INTO quizes (quiz_name, quiz_passing) VALUES (?,?)'
-                db.run(insertQuizes, ["Multiplication Quiz", "1"])
-                db.run(insertQuizes, ["Division Quiz", "1"])
+                db.run(`INSERT INTO quizes 
+                        (quiz_name, quiz_passing) 
+                        VALUES 
+                        ("Multiplication Quiz", "1"),
+                        ("Division Quiz", "1")
+                        `)
                 }
         })
 
@@ -85,10 +97,13 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertQuestions = 'INSERT INTO questions (question, correct_answer, quiz_id) VALUES (?,?,?)'
-                db.run(insertQuestions, ["Hur mycket är 10x10?","100",1])
-                db.run(insertQuestions, ["Hur mycket är 1x10?","10",1])
-                db.run(insertQuestions, ["Hur mycket är 10/2?","5",2])
+                db.run(`INSERT INTO questions 
+                        (question, correct_answer, quiz_id)
+                        VALUES 
+                        ("Hur mycket är 10x10?","100",1),
+                        ("Hur mycket är 1x10?","10",1),
+                        ("Hur mycket är 10/2?","5",2)
+                        `)
             }
         })
 
@@ -103,19 +118,22 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertAnswer = 'INSERT INTO answers (answer, question_id) VALUES (?,?)'
-                db.run(insertAnswer, ["100",1])
-                db.run(insertAnswer, ["99",1])
-                db.run(insertAnswer, ["101",1])
-                db.run(insertAnswer, ["10",1])
-                db.run(insertAnswer, ["9",2])
-                db.run(insertAnswer, ["8",2])
-                db.run(insertAnswer, ["10",2])
-                db.run(insertAnswer, ["11",2])
-                db.run(insertAnswer, ["10",3])
-                db.run(insertAnswer, ["4",3])
-                db.run(insertAnswer, ["6",3])
-                db.run(insertAnswer, ["5",3])
+                db.run(`INSERT INTO answers 
+                        (answer, question_id)
+                        VALUES 
+                        ("100",1),
+                        ("99",1),
+                        ("101",1),
+                        ("10",1),
+                        ("9",2),
+                        ("8",2),
+                        ("10",2),
+                        ("11",2),
+                        ("10",3),
+                        ("4",3),
+                        ("6",3),
+                        ("5",3)
+                        `)
             }
         })
 
@@ -130,10 +148,13 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertClasses_quizes = 'INSERT INTO classes_quizes (quiz_id, classes_id) VALUES (?,?)'
-                db.run(insertClasses_quizes, ["1","1"])
-                db.run(insertClasses_quizes, ["2","1"])
-                db.run(insertClasses_quizes, ["1","2"])
+                db.run(`INSERT INTO classes_quizes 
+                        (quiz_id, classes_id)
+                        VALUES 
+                        ("1","1"),
+                        ("2","1"),
+                        ("1","2")
+                        `)
             }
         })
         db.run(`CREATE TABLE result (
@@ -149,16 +170,20 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table already created
             }else{
                 // Table just created, creating some rows
-                var insertResult = 'INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
-                db.run(insertResult, ["0","1","1"])
-                db.run(insertResult, ["0","1","2"])
-                db.run(insertResult, ["1","1","3"])
-                db.run(insertResult, ["0","2","1"])
-                db.run(insertResult, ["1","2","2"])
-                db.run(insertResult, ["1","2","3"])
-                db.run(insertResult, ["1","3","1"])
-                db.run(insertResult, ["1","3","2"])
-                db.run(insertResult, ["1","3","3"])
+                db.run(`INSERT INTO result 
+                        (result, question_id, user_id)
+                        VALUES 
+                        ("0","1","1"),
+                        ("0","1","2"),
+                        ("1","1","3"),
+                        ("0","2","1"),
+                        ("1","2","2"),
+                        ("1","2","3"),
+                        ("1","3","1"),
+                        ("1","3","2"),
+                        ("1","3","3")
+                        `)
+
             }
         })
     }
