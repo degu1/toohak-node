@@ -160,24 +160,26 @@ app.get("/quiznames/", (req, res, next) => {
 });
 
 
-app.post("/quizes/", (req, res, next) => {
-    var errors = []
-    if (!req.body.quiz_name) {
-        errors.push("No name");
-    }
-    var data = {
-        quiz_name: req.body.quiz_name
-    }
-    var sql = 'INSERT INTO quizes (quiz_name) VALUES (?)'
-    var params = [data.quiz_name]
+app.post("/quiz_name/:quizName", (req, res, next) => {
+    var sql = 'INSERT INTO quizes (quiz_name, quiz_passing) VALUES (?,0)'
+    var params = [req.params.quizName]
     db.run(sql, params, function (err, result) {
         if (err) {
             res.status(400).json({"error": err.message})
             return;
         }
+
+    });
+
+    db.all("SELECT quiz_id FROM quizes WHERE quiz_name = ?", params, function (err, result) {
+        if (err) {
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        console.log(result)
         res.json({
             "message": "success",
-            "quiz": data
+            "quiz_id": result[0].quiz_id
         })
     });
 })
@@ -211,11 +213,13 @@ app.post("/questions/", (req, res, next) => {
 })
 
 app.post("/result/", (req, res, next) => {
+
     var data = {
         result: req.body.result,
         question_id: req.body.question_id,
         user_id: req.body.user_id
     }
+
     var sql = 'INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
     var params = [data.result, data.question_id, data.user_id]
     db.run(sql, params, function (err, result) {
@@ -230,4 +234,31 @@ app.post("/result/", (req, res, next) => {
             "user_id": data.user_id
         })
     });
+
+
 })
+
+
+
+app.post("/test/", (req, res, next) => {
+
+    var data = JSON.stringify(req.body.results)
+    console.log(data)
+    var dataArray = eval(data)
+
+    var sql = 'INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
+
+    for(let i = 0; i < dataArray.length; i++){
+        var params = [dataArray[i].result, dataArray[i].question_id, dataArray[i].user_id]
+        db.run(sql, params, function (err, result) {
+            if (err) {
+                res.status(400).json({"error": err.message})
+                return;
+            }
+        })
+    }
+    res.json({
+        "message": "success"
+    })
+})
+
