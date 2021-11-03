@@ -184,34 +184,6 @@ app.post("/quiz_name/:quizName", (req, res, next) => {
     });
 })
 
-app.post("/questions/", (req, res, next) => {
-    var errors = []
-    if (!req.body.question) {
-        errors.push("No question");
-    }
-    var data = {
-        question: req.body.question,
-        correct_answer: req.body.correct_answer,
-        answer1: req.body.answer1,
-        answer2: req.body.answer2,
-        answer3: req.body.answer3,
-        answer4: req.body.answer4,
-        quiz_id: req.body.quiz_id
-    }
-    var sql = 'INSERT INTO questions (question, correct_answer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
-    var params = [data.question, data.correct_answer, data.answer1, data.answer2, data.answer3, data.answer4, data.quiz_id]
-    db.run(sql, params, function (err, result) {
-        if (err) {
-            res.status(400).json({"error": err.message})
-            return;
-        }
-        res.json({
-            "message": "success",
-            "quiz": data
-        })
-    });
-})
-
 app.post("/result/", (req, res, next) => {
 
     var data = {
@@ -238,27 +210,48 @@ app.post("/result/", (req, res, next) => {
 
 })
 
+app.post("/quiz_question/", (req, res, next) => {
+    const data = req.body.question
+    var questionId
 
+    const sql1 = 'INSERT INTO questions (question, correct_answer, quiz_id) VALUES (?,?,?)'
+    var params1 = [data.question, data.correct_answer, data.quiz_id]
+    db.run(sql1, params1, function (err, result) {
+        if (err) {
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        async: false
+    })
 
-app.post("/test/", (req, res, next) => {
+    const sql2 =`SELECT question_id FROM questions q WHERE q.question = ?`
+    params2 = [data.question]
 
-    var data = JSON.stringify(req.body.results)
-    console.log(data)
-    var dataArray = eval(data)
+    db.all(sql2, params2, function (err, result) {
+        if (err) {
+            console.log("In err")
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        questionId = result[0].question_id
+        async: false
+    })
 
-    var sql = 'INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
+    const sql3 = 'INSERT INTO answers (answer, question_id) VALUES (?,?);'
 
-    for(let i = 0; i < dataArray.length; i++){
-        var params = [dataArray[i].result, dataArray[i].question_id, dataArray[i].user_id]
-        db.run(sql, params, function (err, result) {
+    for(let i = 0; i < data.answers.length; i++) {
+        console.log("q_id " + questionId + "  " +data.answers[i].answer)
+        var params3 = [data.answers[i].answer, 1]
+        db.run(sql3, params3, function (err, result) {
             if (err) {
                 res.status(400).json({"error": err.message})
                 return;
             }
+            async: false
         })
     }
+
     res.json({
         "message": "success"
     })
 })
-
