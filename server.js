@@ -184,6 +184,21 @@ app.post("/quiz_name/:quizName", (req, res, next) => {
     });
 })
 
+app.get("/results/", (req, res, next) => {
+    var sql = "select * from result"
+    // var params = [req.params.quiz_name]
+    db.all(sql, (err, row) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success",
+            "result": row
+        })
+    });
+});
+
 app.post("/result/", (req, res, next) => {
 
     var data = {
@@ -211,7 +226,7 @@ app.post("/result/", (req, res, next) => {
 })
 
 app.post("/quiz_question/", (req, res, next) => {
-    const data = req.body.question
+    const data = req.body
     var questionId
 
     const sql1 = 'INSERT INTO questions (question, correct_answer, quiz_id) VALUES (?,?,?)'
@@ -224,7 +239,7 @@ app.post("/quiz_question/", (req, res, next) => {
         async: false
     })
 
-    const sql2 =`SELECT question_id FROM questions q WHERE q.question = ?`
+    const sql2 = `SELECT question_id FROM questions q WHERE q.question = ?`
     params2 = [data.question]
 
     db.all(sql2, params2, function (err, result) {
@@ -234,24 +249,35 @@ app.post("/quiz_question/", (req, res, next) => {
             return;
         }
         questionId = result[0].question_id
+        console.log("in sql2 " + questionId)
+        sql3(questionId, data)
         async: false
     })
 
-    const sql3 = 'INSERT INTO answers (answer, question_id) VALUES (?,?);'
 
-    for(let i = 0; i < data.answers.length; i++) {
-        console.log("q_id " + questionId + "  " +data.answers[i].answer)
-        var params3 = [data.answers[i].answer, 1]
-        db.run(sql3, params3, function (err, result) {
-            if (err) {
-                res.status(400).json({"error": err.message})
-                return;
-            }
-            async: false
-        })
-    }
+
 
     res.json({
         "message": "success"
     })
 })
+
+function sql3(questionId, data){
+    if (questionId !== undefined) {
+        const sql3 = 'INSERT INTO answers (answer, question_id) VALUES (?,?);'
+
+        for (let i = 0; i < data.answers.length; i++) {
+            console.log("q_id " + questionId + "  " + data.answers[i].answer)
+            var params3 = [data.answers[i].answer, questionId]
+            db.run(sql3, params3, function (err, result) {
+                if (err) {
+                    res.status(400).json({"error": err.message})
+                    return;
+                }
+                async: false
+            })
+        }
+        return;
+    }
+    setTimeout(sql3,100)
+}
