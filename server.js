@@ -348,3 +348,18 @@ app.put("/passing/:quiz_id/:passingNumber", (req, res, next) => {
         })
     });
 });
+
+app.get("/passing/:quiz_id", (req, res, next) => {
+    var sql = 'SELECT quiz_passing FROM quizes WHERE quiz_id = ?;'
+    var params = [req.params.quiz_id ]
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success",
+            "answers": rows
+        })
+    });
+});
