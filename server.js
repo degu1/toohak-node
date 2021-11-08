@@ -281,3 +281,29 @@ function sql3(questionId, data){
     }
     setTimeout(sql3,100)
 }
+
+app.delete("/questions/:questionId", (req, res, next) => {
+    const sql = 'DELETE FROM answers WHERE question_id = ?;'
+    var params = [req.params.questionId]
+    db.all(sql,params, (err, row) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+
+    });
+
+    const sql2 = 'DELETE FROM questions WHERE question_id = ?;'
+    db.all(sql2,params, (err) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+
+    });
+
+
+    res.json({
+        "message": "success"
+    })
+});
