@@ -334,3 +334,17 @@ app.delete("/quizes/:quizId", (req, res, next) => {
         "message": "success"
     })
 });
+
+app.put("/passing/:quiz_id/:passingNumber", (req, res, next) => {
+    var sql = 'UPDATE quizes SET quiz_passing = ? WHERE quiz_id = ?;'
+    var params = [req.params.passingNumber, req.params.quiz_id ]
+    db.run(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success"
+        })
+    });
+});
