@@ -160,62 +160,53 @@ app.get("/quiznames/", (req, res, next) => {
 });
 
 
-app.post("/quizes/", (req, res, next) => {
-    var errors = []
-    if (!req.body.quiz_name) {
-        errors.push("No name");
-    }
-    var data = {
-        quiz_name: req.body.quiz_name
-    }
-    var sql = 'INSERT INTO quizes (quiz_name) VALUES (?)'
-    var params = [data.quiz_name]
+app.post("/quiz_name/:quizName", (req, res, next) => {
+    var sql = 'INSERT INTO quizes (quiz_name, quiz_passing) VALUES (?,0)'
+    var params = [req.params.quizName]
     db.run(sql, params, function (err, result) {
         if (err) {
             res.status(400).json({"error": err.message})
             return;
         }
+
+    });
+
+    db.all("SELECT quiz_id FROM quizes WHERE quiz_name = ?", params, function (err, result) {
+        if (err) {
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        console.log(result)
         res.json({
             "message": "success",
-            "quiz": data
+            "quiz_id": result[0].quiz_id
         })
     });
 })
 
-app.post("/questions/", (req, res, next) => {
-    var errors = []
-    if (!req.body.question) {
-        errors.push("No question");
-    }
-    var data = {
-        question: req.body.question,
-        correct_answer: req.body.correct_answer,
-        answer1: req.body.answer1,
-        answer2: req.body.answer2,
-        answer3: req.body.answer3,
-        answer4: req.body.answer4,
-        quiz_id: req.body.quiz_id
-    }
-    var sql = 'INSERT INTO questions (question, correct_answer, answer1, answer2, answer3, answer4, quiz_id) VALUES (?,?,?,?,?,?,?)'
-    var params = [data.question, data.correct_answer, data.answer1, data.answer2, data.answer3, data.answer4, data.quiz_id]
-    db.run(sql, params, function (err, result) {
+app.get("/results/", (req, res, next) => {
+    var sql = "select * from result"
+    // var params = [req.params.quiz_name]
+    db.all(sql, (err, row) => {
         if (err) {
-            res.status(400).json({"error": err.message})
+            res.status(400).json({"error": err.message});
             return;
         }
         res.json({
             "message": "success",
-            "quiz": data
+            "result": row
         })
     });
-})
+});
 
 app.post("/result/", (req, res, next) => {
+
     var data = {
         result: req.body.result,
         question_id: req.body.question_id,
         user_id: req.body.user_id
     }
+
     var sql = 'INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
     var params = [data.result, data.question_id, data.user_id]
     db.run(sql, params, function (err, result) {
@@ -230,4 +221,63 @@ app.post("/result/", (req, res, next) => {
             "user_id": data.user_id
         })
     });
+
+
 })
+
+app.post("/quiz_question/", (req, res, next) => {
+    const data = req.body
+    var questionId
+
+    const sql1 = 'INSERT INTO questions (question, correct_answer, quiz_id) VALUES (?,?,?)'
+    var params1 = [data.question, data.correct_answer, data.quiz_id]
+    db.run(sql1, params1, function (err, result) {
+        if (err) {
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        async: false
+    })
+
+    const sql2 = `SELECT question_id FROM questions q WHERE q.question = ?`
+    params2 = [data.question]
+
+    db.all(sql2, params2, function (err, result) {
+        if (err) {
+            console.log("In err")
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        questionId = result[0].question_id
+        console.log("in sql2 " + questionId)
+        sql3(questionId, data)
+        async: false
+    })
+
+
+
+
+    res.json({
+        "message": "success"
+    })
+})
+
+function sql3(questionId, data){
+    if (questionId !== undefined) {
+        const sql3 = 'INSERT INTO answers (answer, question_id) VALUES (?,?);'
+
+        for (let i = 0; i < data.answers.length; i++) {
+            console.log("q_id " + questionId + "  " + data.answers[i].answer)
+            var params3 = [data.answers[i].answer, questionId]
+            db.run(sql3, params3, function (err, result) {
+                if (err) {
+                    res.status(400).json({"error": err.message})
+                    return;
+                }
+                async: false
+            })
+        }
+        return;
+    }
+    setTimeout(sql3,100)
+}
