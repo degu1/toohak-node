@@ -254,9 +254,6 @@ app.post("/quiz_question/", (req, res, next) => {
         async: false
     })
 
-
-
-
     res.json({
         "message": "success"
     })
@@ -292,7 +289,6 @@ app.delete("/questions/:questionId", (req, res, next) => {
         }
 
     });
-
     const sql2 = 'DELETE FROM questions WHERE question_id = ?;'
     db.all(sql2,params, (err) => {
         if (err) {
@@ -301,8 +297,39 @@ app.delete("/questions/:questionId", (req, res, next) => {
         }
 
     });
+    res.json({
+        "message": "success"
+    })
+});
 
-
+app.delete("/quizes/:quizId", (req, res, next) => {
+    const sql = `DELETE FROM answers
+                    WHERE question_id IN(
+                    SELECT question_id FROM questions q
+                    INNER JOIN quizes
+                    ON q.quiz_id = quizes.quiz_id
+                    WHERE quizes.quiz_id = ?);`
+    var params = [req.params.quizId]
+    db.all(sql, params, (err, row) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+    });
+    const sql2 = 'DELETE FROM questions WHERE quiz_id = ?;'
+    db.all(sql2,params, (err) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+    });
+    const sql3 = 'DELETE FROM quizes WHERE quiz_id = ?;'
+    db.all(sql3,params, (err) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+    });
     res.json({
         "message": "success"
     })
