@@ -364,8 +364,8 @@ app.get("/passing/:quiz_id", (req, res, next) => {
     });
 });
 
-app.get("/login/", (req, res, next) => {
-    var sql = 'SELECT user_id FROM users WHERE user_username = ? AND user_password = ?;'
+app.post("/login/", (req, res, next) => {
+    var sql = 'SELECT user_id, user_ROLE FROM users WHERE user_username = ? AND user_password = ?;'
     var params = [req.body.username, req.body.password]
     console.log(req.body.username + " "+ req.body.password)
     db.all(sql, params, (err, rows) => {
