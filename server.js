@@ -48,7 +48,7 @@ app.get("/quizes/:quiz_id", (req, res, next) => {
 });
 
 app.get("/quizes/users/:user_id", (req, res, next) => {
-    var sql = `SELECT q.quiz_id, q.quiz_name FROM quizes q
+    var sql = `SELECT DISTINCT q.quiz_id, q.quiz_name FROM quizes q
         INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
         INNER JOIN classes c ON c.classes_id = cq.classes_id
         INNER JOIN users_classes uc ON c.classes_id = uc.classes_id
@@ -367,7 +367,6 @@ app.get("/passing/:quiz_id", (req, res, next) => {
 app.post("/login/", (req, res, next) => {
     var sql = 'SELECT user_id, user_ROLE FROM users WHERE user_username = ? AND user_password = ?;'
     var params = [req.body.username, req.body.password]
-    console.log(req.body.username + " "+ req.body.password)
     db.all(sql, params, (err, rows) => {
         if (err) {
             res.status(400).json({"error": err.message});
@@ -376,6 +375,23 @@ app.post("/login/", (req, res, next) => {
         res.json({
             "message": "success",
             "answers": rows
+        })
+    });
+});
+
+app.post("/sign-up/", (req, res, next) => {
+    var data = req.body
+    var sql = 'INSERT INTO users (user_username, user_password, user_role) VALUES (?,?,?);'
+    var params = [data.username, data.password, data.role]
+
+    console.log(req.body.username + " "+ req.body.password)
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success"
         })
     });
 });

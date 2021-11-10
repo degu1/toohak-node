@@ -12,7 +12,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         console.log('Connected to the SQlite database.')
         db.run(`CREATE TABLE users (
             user_id INTEGER PRIMARY KEY,
-            user_ROLE TEXT,
+            user_role TEXT,
             user_password TEXT,
             user_username TEXT
             )`,(err) => {
@@ -21,7 +21,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             }else{
                 // Table just created, creating some rows
                 db.run(`INSERT INTO users 
-                        (user_ROLE, user_password, user_username) 
+                        (user_role, user_password, user_username) 
                         VALUES 
                         ("student","password","Dennis"),
                         ("student","password","Milad"),
