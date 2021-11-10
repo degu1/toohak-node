@@ -254,9 +254,6 @@ app.post("/quiz_question/", (req, res, next) => {
         async: false
     })
 
-
-
-
     res.json({
         "message": "success"
     })
@@ -281,3 +278,88 @@ function sql3(questionId, data){
     }
     setTimeout(sql3,100)
 }
+
+app.delete("/questions/:questionId", (req, res, next) => {
+    const sql = 'DELETE FROM answers WHERE question_id = ?;'
+    var params = [req.params.questionId]
+    db.all(sql,params, (err, row) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+
+    });
+    const sql2 = 'DELETE FROM questions WHERE question_id = ?;'
+    db.all(sql2,params, (err) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+
+    });
+    res.json({
+        "message": "success"
+    })
+});
+
+app.delete("/quizes/:quizId", (req, res, next) => {
+    const sql = `DELETE FROM answers
+                    WHERE question_id IN(
+                    SELECT question_id FROM questions q
+                    INNER JOIN quizes
+                    ON q.quiz_id = quizes.quiz_id
+                    WHERE quizes.quiz_id = ?);`
+    var params = [req.params.quizId]
+    db.all(sql, params, (err, row) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+    });
+    const sql2 = 'DELETE FROM questions WHERE quiz_id = ?;'
+    db.all(sql2,params, (err) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+    });
+    const sql3 = 'DELETE FROM quizes WHERE quiz_id = ?;'
+    db.all(sql3,params, (err) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+    });
+    res.json({
+        "message": "success"
+    })
+});
+
+app.put("/passing/:quiz_id/:passingNumber", (req, res, next) => {
+    var sql = 'UPDATE quizes SET quiz_passing = ? WHERE quiz_id = ?;'
+    var params = [req.params.passingNumber, req.params.quiz_id ]
+    db.run(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success"
+        })
+    });
+});
+
+app.get("/passing/:quiz_id", (req, res, next) => {
+    var sql = 'SELECT quiz_passing FROM quizes WHERE quiz_id = ?;'
+    var params = [req.params.quiz_id ]
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success",
+            "answers": rows
+        })
+    });
+});
