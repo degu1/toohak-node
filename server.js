@@ -47,7 +47,7 @@ app.get("/quizes/:quiz_id", (req, res, next) => {
     });
 });
 
-app.get("/quizes/user/:user_id", (req, res, next) => {
+app.get("/quizes/users/:user_id", (req, res, next) => {
     var sql = `SELECT q.quiz_id, q.quiz_name FROM quizes q
         INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
         INNER JOIN classes c ON c.classes_id = cq.classes_id
@@ -352,6 +352,22 @@ app.put("/passing/:quiz_id/:passingNumber", (req, res, next) => {
 app.get("/passing/:quiz_id", (req, res, next) => {
     var sql = 'SELECT quiz_passing FROM quizes WHERE quiz_id = ?;'
     var params = [req.params.quiz_id ]
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "success",
+            "answers": rows
+        })
+    });
+});
+
+app.get("/login/", (req, res, next) => {
+    var sql = 'SELECT user_id FROM users WHERE user_username = ? AND user_password = ?;'
+    var params = [req.body.username, req.body.password]
+    console.log(req.body.username + " "+ req.body.password)
     db.all(sql, params, (err, rows) => {
         if (err) {
             res.status(400).json({"error": err.message});
