@@ -354,7 +354,7 @@ app.get("/passing/:quiz_id", (req, res, next) => {
 });
 
 app.post("/login/", (req, res, next) => {
-    const sql = 'SELECT user_id, user_ROLE FROM users WHERE user_username = ? AND user_password = ?;'
+    const sql = 'SELECT * FROM users WHERE user_username = ? AND user_password = ?;'
     const params = [req.body.username, req.body.password]
     try {
         db.all(sql, params, (err, rows) => {
