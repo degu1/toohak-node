@@ -3,6 +3,7 @@ var app = express()
 var cors = require('cors')
 var db = require("./database.js")
 
+
 app.use(cors())
 app.use(express.static('public'))
 
@@ -12,294 +13,289 @@ app.use(bodyParser.json())
 
 var HTTP_PORT = 3000
 
+async function dbAllPromise(query, params) {
+    return new Promise(function (resolve, reject) {
+        db.all(query, params, function (err, rows) {
+            if (err) {
+                return reject(err);
+            }
+            resolve(rows);
+        });
+    });
+}
+
+async function dbRunPromise(query, params) {
+    return new Promise(function (resolve, reject) {
+        db.run(query, params, function (err, rows) {
+            if (err) {
+                return reject(err);
+            }
+            resolve(rows);
+        });
+    });
+}
+
 // Start server
 app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
 });
 
 app.get("/quizes", (req, res, next) => {
-    var sql = "select * from quizes"
-    var params = []
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "quizes": rows
-        })
-    });
+    const sql = "select * from quizes"
+    const params = []
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "quizes": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
+
 });
 
 app.get("/quizes/:quiz_id", (req, res, next) => {
-    var sql = `SELECT * FROM quizes WHERE quizes.quiz_id = ?`
-    var params = [req.params.quiz_id]
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "quizes": rows
-        })
-    });
+    const sql = `SELECT * FROM quizes WHERE quizes.quiz_id = ?`
+    const params = [req.params.quiz_id]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "quizes": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
+
 });
 
 app.get("/quizes/users/:user_id", (req, res, next) => {
-    var sql = `SELECT DISTINCT q.quiz_id, q.quiz_name FROM quizes q
+    const sql = `SELECT DISTINCT q.quiz_id, q.quiz_name FROM quizes q
         INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
         INNER JOIN classes c ON c.classes_id = cq.classes_id
         INNER JOIN users_classes uc ON c.classes_id = uc.classes_id
         where uc.user_id = ?`
-    var params = [req.params.user_id]
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "quizes": rows
-        })
-    });
+    const params = [req.params.user_id]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "quizes": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.get("/questions/:quiz_id", (req, res, next) => {
-    var sql = "select * from questions where quiz_id = ?"
-    var params = [req.params.quiz_id]
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "questions": rows
-        })
-    });
+    const sql = "select * from questions where quiz_id = ?"
+    const params = [req.params.quiz_id]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "questions": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.get("/answers/:quiz_id", (req, res, next) => {
-    var sql = `SELECT q.question_id, a.answer_id, a.answer
+    const sql = `SELECT q.question_id, a.answer_id, a.answer
     from questions q 
     INNER JOIN answers a on a.question_id = q.question_id
     where q.quiz_id = ?;`
-    var params = [req.params.quiz_id]
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "answers": rows
-        })
-    });
+    const params = [req.params.quiz_id]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "answers": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
+
 });
 
 app.get("/questions", (req, res, next) => {
-    var sql = "select * from questions"
-    var params = []
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "questions": rows
-        })
-    });
+    const sql = "select * from questions"
+    const params = []
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "questions": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.get("/answers", (req, res, next) => {
-    var sql = "select * from answers"
-    var params = []
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "answers": rows
-        })
-    });
+    const sql = "select * from answers"
+    const params = []
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "answers": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.get("/quizes/:quizName", (req, res, next) => {
-    var sql = "select * from quizes where quizName = ?"
-    var params = [req.params.quizName]
-    db.all(sql, params, (err, row) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "quizes": row
-        })
-    });
+    const sql = "select * from quizes where quizName = ?"
+    const params = [req.params.quizName]
+    try {
+        db.all(sql, params, (err, row) => {
+            res.json({
+                "message": "success",
+                "quizes": row
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.get("/quiznames/", (req, res, next) => {
-    var sql = "select DISTINCT quiz_id, quiz_name from quizes"
-    // var params = [req.params.quiz_name]
-    db.all(sql, (err, row) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "quizes": row
-        })
-    });
+    const sql = "select DISTINCT quiz_id, quiz_name from quizes"
+    try {
+        db.all(sql, (err, row) => {
+            res.json({
+                "message": "success",
+                "quizes": row
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
-
-app.post("/quiz_name/:quizName", (req, res, next) => {
-    var sql = 'INSERT INTO quizes (quiz_name, quiz_passing) VALUES (?,0)'
-    var params = [req.params.quizName]
-    db.run(sql, params, function (err, result) {
-        if (err) {
-            res.status(400).json({"error": err.message})
-            return;
-        }
-
-    });
-
-    db.all("SELECT quiz_id FROM quizes WHERE quiz_name = ?", params, function (err, result) {
-        if (err) {
-            res.status(400).json({"error": err.message})
-            return;
-        }
-        console.log(result)
-        res.json({
-            "message": "success",
-            "quiz_id": result[0].quiz_id
-        })
-    });
+app.post("/quiz_name/:quizName", async (req, res, next) => {
+    const sql = 'INSERT INTO quizes (quiz_name, quiz_passing) VALUES (?,0)'
+    const params = [req.params.quizName]
+    const sql2 = `SELECT quiz_id FROM quizes WHERE quiz_name = ?`
+    try {
+        await dbRunPromise(sql, params)
+        db.all(sql2, params, function (err, result) {
+            res.json({
+                "message": "success",
+                "quiz_id": result[0].quiz_id
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
 })
 
 app.get("/results/", (req, res, next) => {
-    var sql = "select * from result"
-    // var params = [req.params.quiz_name]
-    db.all(sql, (err, row) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "result": row
-        })
-    });
+    const sql = "select * from result"
+    try {
+        db.all(sql, (err, row) => {
+            res.json({
+                "message": "success",
+                "result": row
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.post("/result/", (req, res, next) => {
-
-    var data = {
+    const data = {
         result: req.body.result,
         question_id: req.body.question_id,
         user_id: req.body.user_id
     }
 
-    var sql = 'INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
-    var params = [data.result, data.question_id, data.user_id]
-    db.run(sql, params, function (err, result) {
-        if (err) {
-            res.status(400).json({"error": err.message})
-            return;
-        }
-        res.json({
-            "message": "success",
-            "result": data.result,
-            "question_id": data.question_id,
-            "user_id": data.user_id
-        })
-    });
-
-
+    const sql = 'INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
+    const params = [data.result, data.question_id, data.user_id]
+    try {
+        db.run(sql, params, function (err, result) {
+            res.json({
+                "message": "success",
+                "result": data.result,
+                "question_id": data.question_id,
+                "user_id": data.user_id
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
 })
 
-app.post("/quiz_question/", (req, res, next) => {
+app.post("/quiz_question/", async (req, res, next) => {
     const data = req.body
-    var questionId
+    let questionId
 
     const sql1 = 'INSERT INTO questions (question, correct_answer, quiz_id) VALUES (?,?,?)'
     var params1 = [data.question, data.correct_answer, data.quiz_id]
-    db.run(sql1, params1, function (err, result) {
-        if (err) {
-            res.status(400).json({"error": err.message})
-            return;
-        }
-        async: false
-    })
 
     const sql2 = `SELECT question_id FROM questions q WHERE q.question = ?`
-    params2 = [data.question]
+    const params2 = [data.question]
 
-    db.all(sql2, params2, function (err, result) {
-        if (err) {
-            console.log("In err")
-            res.status(400).json({"error": err.message})
-            return;
-        }
-        questionId = result[0].question_id
-        console.log("in sql2 " + questionId)
-        sql3(questionId, data)
-        async: false
-    })
+    const sql3 = 'INSERT INTO answers (answer, question_id) VALUES (?,?);'
 
-    res.json({
-        "message": "success"
-    })
-})
-
-function sql3(questionId, data){
-    if (questionId !== undefined) {
-        const sql3 = 'INSERT INTO answers (answer, question_id) VALUES (?,?);'
-
+    try {
+        await dbAllPromise(sql1, params1)
+        let result2 = await dbAllPromise(sql2, params2)
+        questionId = result2[0].question_id
         for (let i = 0; i < data.answers.length; i++) {
             console.log("q_id " + questionId + "  " + data.answers[i].answer)
             var params3 = [data.answers[i].answer, questionId]
             db.run(sql3, params3, function (err, result) {
-                if (err) {
-                    res.status(400).json({"error": err.message})
-                    return;
-                }
-                async: false
             })
         }
-        return;
+        res.json({
+            "message": "success"
+        })
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
     }
-    setTimeout(sql3,100)
-}
+})
 
-app.delete("/questions/:questionId", (req, res, next) => {
-    const sql = 'DELETE FROM answers WHERE question_id = ?;'
-    var params = [req.params.questionId]
-    db.all(sql,params, (err, row) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-
-    });
+app.delete("/questions/:questionId", async (req, res, next) => {
+    const sql1 = 'DELETE FROM answers WHERE question_id = ?;'
     const sql2 = 'DELETE FROM questions WHERE question_id = ?;'
-    db.all(sql2,params, (err) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-
-    });
-    res.json({
-        "message": "success"
-    })
+    const params = [req.params.questionId]
+    try {
+        await dbAllPromise(sql1, params)
+        db.all(sql2, params, (err) => {
+        });
+        res.json({
+            "message": "success"
+        })
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.delete("/quizes/:quizId", (req, res, next) => {
@@ -309,89 +305,82 @@ app.delete("/quizes/:quizId", (req, res, next) => {
                     INNER JOIN quizes
                     ON q.quiz_id = quizes.quiz_id
                     WHERE quizes.quiz_id = ?);`
-    var params = [req.params.quizId]
-    db.all(sql, params, (err, row) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-    });
     const sql2 = 'DELETE FROM questions WHERE quiz_id = ?;'
-    db.all(sql2,params, (err) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-    });
     const sql3 = 'DELETE FROM quizes WHERE quiz_id = ?;'
-    db.all(sql3,params, (err) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-    });
-    res.json({
-        "message": "success"
-    })
+    const params = [req.params.quizId]
+    try {
+        db.all(sql, params, (err, row) => {
+        });
+        db.all(sql2, params, (err) => {
+        });
+        db.all(sql3, params, (err) => {
+        });
+        res.json({"message": "success"})
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.put("/passing/:quiz_id/:passingNumber", (req, res, next) => {
-    var sql = 'UPDATE quizes SET quiz_passing = ? WHERE quiz_id = ?;'
-    var params = [req.params.passingNumber, req.params.quiz_id ]
-    db.run(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success"
-        })
-    });
+    const sql = 'UPDATE quizes SET quiz_passing = ? WHERE quiz_id = ?;'
+    const params = [req.params.passingNumber, req.params.quiz_id]
+    try {
+        db.run(sql, params, (err, rows) => {
+            res.json({
+                "message": "success"
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.get("/passing/:quiz_id", (req, res, next) => {
-    var sql = 'SELECT quiz_passing FROM quizes WHERE quiz_id = ?;'
-    var params = [req.params.quiz_id ]
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "answers": rows
-        })
-    });
+    const sql = 'SELECT quiz_passing FROM quizes WHERE quiz_id = ?;'
+    const params = [req.params.quiz_id]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "answers": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.post("/login/", (req, res, next) => {
-    var sql = 'SELECT user_id, user_ROLE FROM users WHERE user_username = ? AND user_password = ?;'
-    var params = [req.body.username, req.body.password]
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success",
-            "answers": rows
-        })
-    });
+    const sql = 'SELECT user_id, user_ROLE FROM users WHERE user_username = ? AND user_password = ?;'
+    const params = [req.body.username, req.body.password]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "answers": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
 
 app.post("/sign-up/", (req, res, next) => {
-    var data = req.body
-    var sql = 'INSERT INTO users (user_username, user_password, user_role) VALUES (?,?,?);'
-    var params = [data.username, data.password, data.role]
-
-    console.log(req.body.username + " "+ req.body.password)
-    db.all(sql, params, (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "success"
-        })
-    });
+    const data = req.body
+    const sql = 'INSERT INTO users (user_username, user_password, user_role) VALUES (?,?,?);'
+    const params = [data.username, data.password, data.role]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success"
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
 });
