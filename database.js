@@ -48,6 +48,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             users_classes_id INTEGER PRIMARY KEY,
             classes_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
+            UNIQUE (classes_id, user_id),
             FOREIGN KEY (classes_id) REFERENCES classes (classes_id),
             FOREIGN KEY (user_id) REFERENCES users (user_id)
             )`,(err) => {
