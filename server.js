@@ -54,7 +54,6 @@ app.get("/quizes", (req, res, next) => {
         console.error(err.message)
         res.status(400).json({"error": err.message})
     }
-
 });
 
 app.get("/quizes/:quiz_id", (req, res, next) => {
@@ -257,7 +256,7 @@ app.post("/quiz_question/", async (req, res, next) => {
     const sql1 = 'INSERT INTO questions (question, correct_answer, quiz_id) VALUES (?,?,?)'
     var params1 = [data.question, data.correct_answer, data.quiz_id]
 
-    const sql2 = `SELECT question_id FROM questions q WHERE q.question = ?`
+    const sql2 = 'SELECT question_id FROM questions q WHERE q.question = ?'
     const params2 = [data.question]
 
     const sql3 = 'INSERT INTO answers (answer, question_id) VALUES (?,?);'
@@ -379,6 +378,73 @@ app.post("/sign-up/", (req, res, next) => {
                 "message": "success"
             })
         });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
+});
+
+app.get("/classes/", (req, res, next) => {
+    const sql = "select * from classes"
+    try {
+        db.all(sql, (err, rows) => {
+            res.json({
+                "message": "success",
+                "quizes": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
+});
+
+
+app.post("/classes/:className", (req, res, next) => {
+    const sql = 'INSERT INTO classes (classes_name) VALUES (?);'
+    const params = [req.params.className]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success"
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message});
+    }
+});
+
+app.get("/students/:classId", (req, res, next) => {
+    const sql = `SELECT * FROM users u
+                    INNER JOIN users_classes uc ON u.user_id = uc.user_id
+                    where uc.classes_id = ?;`
+    const params = req.params.classId
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "students": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
+});
+
+app.patch("/classes/add_students/", async (req, res, next) => {
+    const sql1 = 'DELETE FROM users_classes where classes_id = ?;'
+    const sql2 = 'INSERT INTO users_classes (user_id, classes_id) VALUES (?,?);'
+    const data = req.body
+    try {
+        await dbRunPromise(sql1, [data.classes_id])
+        for (let i = 0; i < data.users.length; i++) {
+            db.all(sql2, [data.users[i].user_id, data.classes_id])
+        }
+        res.json({
+            "message": "success"
+        })
     } catch (err) {
         console.error(err.message)
         res.status(400).json({"error": err.message});
