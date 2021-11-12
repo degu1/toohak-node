@@ -450,3 +450,45 @@ app.patch("/classes/add_students/", async (req, res, next) => {
         res.status(400).json({"error": err.message});
     }
 });
+
+
+
+app.get("/user_statistics/users/:userId", (req, res, next) => {
+    const sql = `SELECT quiz.quiz_name, SUM(result) AS result,COUNT(*) AS 'n_questions',
+                     CASE WHEN SUM(result) < (COUNT(q.question_id))*quiz.quiz_passing/100 THEN 0 ELSE 1 END passed
+                     FROM result r
+                     INNER JOIN questions q on q.question_id = r.question_id
+                     INNER JOIN quizes quiz ON quiz.quiz_id = q.quiz_id
+                     WHERE r.user_id = 1
+                     GROUP BY quiz.quiz_id;`
+    const params = req.params.userId
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "quiz_result": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
+});
+
+app.get("/user_statistics/", (req, res, next) => {
+    const sql = `SELECT q.question, r.result FROM result r
+                    INNER JOIN questions q ON r.question_id = q.question_id
+                    WHERE q.quiz_id = ? AND r.user_id = ?;`
+    const params = [req.body.quiz_id, req.body.user_id]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "quiz_result": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
+});
