@@ -459,7 +459,7 @@ app.get("/user_statistics/users/:userId", (req, res, next) => {
                      FROM result r
                      INNER JOIN questions q on q.question_id = r.question_id
                      INNER JOIN quizes quiz ON quiz.quiz_id = q.quiz_id
-                     WHERE r.user_id = 1
+                     WHERE r.user_id = ?
                      GROUP BY quiz.quiz_id;`
     const params = req.params.userId
     try {
@@ -476,7 +476,7 @@ app.get("/user_statistics/users/:userId", (req, res, next) => {
 });
 
 app.get("/user_statistics/", (req, res, next) => {
-    const sql = `SELECT q.question, r.result FROM result r
+    const sql = `SELECT q.question, q.correct_answer, r.result FROM result r
                     INNER JOIN questions q ON r.question_id = q.question_id
                     WHERE q.quiz_id = ? AND r.user_id = ?;`
     const params = [req.body.quiz_id, req.body.user_id]
