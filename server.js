@@ -35,6 +35,11 @@ async function dbRunPromise(query, params) {
     });
 }
 
+function errorHandler(err, res) {
+    console.error(err.message)
+    res.status(400).json({"error": err.message})
+}
+
 // Start server
 app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
@@ -51,8 +56,7 @@ app.get("/quizes", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message})
+        errorHandler(err, res)
     }
 });
 
@@ -67,8 +71,7 @@ app.get("/quizes/:quiz_id", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 
 });
@@ -88,8 +91,7 @@ app.get("/quizes/users/:user_id", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -104,8 +106,7 @@ app.get("/questions/:quiz_id", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -123,8 +124,7 @@ app.get("/answers/:quiz_id", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 
 });
@@ -140,8 +140,7 @@ app.get("/questions", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -156,8 +155,7 @@ app.get("/answers", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -172,8 +170,7 @@ app.get("/quizes/:quizName", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -187,8 +184,7 @@ app.get("/quiznames/", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -205,8 +201,7 @@ app.post("/quiz_name/:quizName", async (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message})
+        errorHandler(err, res)
     }
 })
 
@@ -220,8 +215,7 @@ app.get("/results/", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -244,8 +238,7 @@ app.post("/result/", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message})
+        errorHandler(err, res)
     }
 })
 
@@ -275,8 +268,7 @@ app.post("/quiz_question/", async (req, res, next) => {
             "message": "success"
         })
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message})
+        errorHandler(err, res)
     }
 })
 
@@ -292,8 +284,7 @@ app.delete("/questions/:questionId", async (req, res, next) => {
             "message": "success"
         })
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -316,8 +307,7 @@ app.delete("/quizes/:quizId", (req, res, next) => {
         });
         res.json({"message": "success"})
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -331,8 +321,7 @@ app.put("/passing/:quiz_id/:passingNumber", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -347,8 +336,7 @@ app.get("/passing/:quiz_id", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -363,8 +351,7 @@ app.post("/login/", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -379,8 +366,7 @@ app.post("/sign-up/", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -394,8 +380,7 @@ app.get("/classes/", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message})
+        errorHandler(err, res)
     }
 });
 
@@ -410,8 +395,7 @@ app.post("/classes/:className", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
@@ -428,8 +412,7 @@ app.get("/students/:classId", (req, res, next) => {
             })
         });
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message})
+        errorHandler(err, res)
     }
 });
 
@@ -446,8 +429,7 @@ app.patch("/classes/add_students/", async (req, res, next) => {
             "message": "success"
         })
     } catch (err) {
-        console.error(err.message)
-        res.status(400).json({"error": err.message});
+        errorHandler(err, res)
     }
 });
 
