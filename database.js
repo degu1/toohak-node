@@ -78,8 +78,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 db.run(`INSERT INTO quizes 
                         (quiz_name, quiz_passing) 
                         VALUES 
-                        ("Multiplication Quiz", "1"),
-                        ("Division Quiz", "1")
+                        ("Multiplication Quiz", "60"),
+                        ("Division Quiz", "60")
                         `)
                 }
         })

@@ -226,7 +226,7 @@ app.post("/result/", (req, res, next) => {
         user_id: req.body.user_id
     }
 
-    const sql = 'INSERT INTO result (result, question_id, user_id) VALUES (?,?,?)'
+    const sql = 'REPLACE INTO result (result, question_id, user_id) VALUES (?,?,?)'
     const params = [data.result, data.question_id, data.user_id]
     try {
         db.run(sql, params, function (err, result) {
@@ -434,7 +434,6 @@ app.patch("/classes/add_students/", async (req, res, next) => {
 });
 
 
-
 app.get("/user_statistics/users/:userId", (req, res, next) => {
     const sql = `SELECT quiz.quiz_name, SUM(result) AS result,COUNT(*) AS 'n_questions',
                      CASE WHEN SUM(result) < (COUNT(q.question_id))*quiz.quiz_passing/100 THEN 0 ELSE 1 END passed
@@ -469,6 +468,41 @@ app.get("/user_statistics/", (req, res, next) => {
                 "quiz_result": rows
             })
         });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
+});
+
+app.get("/class_statistics/:classId", async (req, res, next) => {
+    const sql1 = `SELECT q.quiz_id, quiz_name FROM quizes q
+                    INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
+                    WHERE cq.classes_id=?;`
+    const sql2 = `SELECT SUM(result), r.user_id, u.user_username, CASE
+                    WHEN SUM(result) < COUNT(q.quiz_id)*quiz.quiz_passing/100 THEN 0 ELSE 1 END pass
+                    FROM result r
+                    INNER JOIN questions q on q.question_id = r.question_id
+                    INNER JOIN users u on u.user_id = r.user_id
+                    INNER JOIN users_classes uc on u.user_id = uc.user_id
+                    INNER JOIN quizes quiz ON quiz.quiz_id = q.quiz_id
+                    WHERE quiz.quiz_id = ? AND uc.classes_id = ?
+                    GROUP BY r.user_id;`
+    const params = [req.params.classId]
+    try {
+        await dbAllPromise(sql1, params)
+            .then(async function (rows) {
+                for (let i = 0; i < rows.length; i++) {
+                    await dbAllPromise(sql2, [rows[i].quiz_id, req.params.classId])
+                        .then((rows2) => {
+                        rows[i].results = rows2
+                    })
+                }
+                res.json({
+                    "message": "success",
+                    "quiz_result": rows
+                })
+            })
+
     } catch (err) {
         console.error(err.message)
         res.status(400).json({"error": err.message})
