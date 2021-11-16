@@ -447,6 +447,22 @@ app.patch("/classes/add_students/", async (req, res) => {
     }
 });
 
+app.delete("/classes/:classesId", async (req, res) => {
+    const sql1 = "DELETE FROM users_classes where classes_id = ?;"
+    const sql2 = "DELETE FROM classes_quizes where classes_id = ?;"
+    const sql3 = "DELETE FROM classes where classes_id = ?;"
+    const classesId = req.params.classesId
+    try {
+        await dbAllPromise(sql1, [classesId])
+        await dbAllPromise(sql2,[classesId])
+        await dbAllPromise(sql3, [classesId])
+        res.json({
+            "message": "success"
+        })
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
 
 app.get("/user_statistics/users/:userId", (req, res) => {
     const sql = `SELECT quiz.quiz_name, SUM(result) AS result,COUNT(*) AS 'n_questions',
