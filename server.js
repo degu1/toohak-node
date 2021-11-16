@@ -225,7 +225,6 @@ app.post("/result/", (req, res, next) => {
         question_id: req.body.question_id,
         user_id: req.body.user_id
     }
-
     const sql = 'REPLACE INTO result (result, question_id, user_id) VALUES (?,?,?)'
     const params = [data.result, data.question_id, data.user_id]
     try {
@@ -237,6 +236,25 @@ app.post("/result/", (req, res, next) => {
                 "user_id": data.user_id
             })
         });
+    } catch (err) {
+        errorHandler(err, res)
+    }
+})
+
+app.post("/results/", (req, res, next) => {
+    const results = req.body.results
+    const user_id = req.body.user_id
+    const sql = 'REPLACE INTO result (result, question_id, user_id) VALUES (?,?,?)'
+    try {
+        for (let i = 0; i < results.length; i++) {
+            let result = results[i].result
+            let question_id = results[i].question_id
+            console.log(result)
+            db.run(sql, [result, question_id, user_id])
+        }
+        res.json({
+            "message": "success"
+        })
     } catch (err) {
         errorHandler(err, res)
     }
@@ -494,8 +512,8 @@ app.get("/class_statistics/:classId", async (req, res, next) => {
                 for (let i = 0; i < rows.length; i++) {
                     await dbAllPromise(sql2, [rows[i].quiz_id, req.params.classId])
                         .then((rows2) => {
-                        rows[i].results = rows2
-                    })
+                            rows[i].results = rows2
+                        })
                 }
                 res.json({
                     "message": "success",
