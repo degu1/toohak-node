@@ -1,17 +1,17 @@
-var express = require("express")
-var app = express()
-var cors = require('cors')
-var db = require("./database.js")
+const express = require("express")
+const app = express()
+const cors = require('cors')
+const db = require("./database.js")
 
 
 app.use(cors())
 app.use(express.static('public'))
 
-var bodyParser = require("body-parser")
+const bodyParser = require("body-parser")
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
-var HTTP_PORT = 3000
+const HTTP_PORT = 3000
 
 async function dbAllPromise(query, params) {
     return new Promise(function (resolve, reject) {
@@ -45,7 +45,7 @@ app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
 });
 
-app.get("/quizes", (req, res, next) => {
+app.get("/quizes", (req, res) => {
     const sql = "select * from quizes"
     const params = []
     try {
@@ -60,7 +60,7 @@ app.get("/quizes", (req, res, next) => {
     }
 });
 
-app.get("/quizes/:quiz_id", (req, res, next) => {
+app.get("/quizes/:quiz_id", (req, res) => {
     const sql = `SELECT * FROM quizes WHERE quizes.quiz_id = ?`
     const params = [req.params.quiz_id]
     try {
@@ -76,7 +76,7 @@ app.get("/quizes/:quiz_id", (req, res, next) => {
 
 });
 
-app.get("/quizes/users/:user_id", (req, res, next) => {
+app.get("/quizes/users/:user_id", (req, res) => {
     const sql = `SELECT DISTINCT q.quiz_id, q.quiz_name FROM quizes q
         INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
         INNER JOIN classes c ON c.classes_id = cq.classes_id
@@ -95,7 +95,7 @@ app.get("/quizes/users/:user_id", (req, res, next) => {
     }
 });
 
-app.get("/questions/:quiz_id", (req, res, next) => {
+app.get("/questions/:quiz_id", (req, res) => {
     const sql = "select * from questions where quiz_id = ?"
     const params = [req.params.quiz_id]
     try {
@@ -110,7 +110,7 @@ app.get("/questions/:quiz_id", (req, res, next) => {
     }
 });
 
-app.get("/answers/:quiz_id", (req, res, next) => {
+app.get("/answers/:quiz_id", (req, res) => {
     const sql = `SELECT q.question_id, a.answer_id, a.answer
     from questions q 
     INNER JOIN answers a on a.question_id = q.question_id
@@ -129,7 +129,7 @@ app.get("/answers/:quiz_id", (req, res, next) => {
 
 });
 
-app.get("/questions", (req, res, next) => {
+app.get("/questions", (req, res) => {
     const sql = "select * from questions"
     const params = []
     try {
@@ -144,7 +144,7 @@ app.get("/questions", (req, res, next) => {
     }
 });
 
-app.get("/answers", (req, res, next) => {
+app.get("/answers", (req, res) => {
     const sql = "select * from answers"
     const params = []
     try {
@@ -159,7 +159,7 @@ app.get("/answers", (req, res, next) => {
     }
 });
 
-app.get("/quizes/:quizName", (req, res, next) => {
+app.get("/quizes/:quizName", (req, res) => {
     const sql = "select * from quizes where quizName = ?"
     const params = [req.params.quizName]
     try {
@@ -174,7 +174,7 @@ app.get("/quizes/:quizName", (req, res, next) => {
     }
 });
 
-app.get("/quiznames/", (req, res, next) => {
+app.get("/quiznames/", (req, res) => {
     const sql = "select DISTINCT quiz_id, quiz_name from quizes"
     try {
         db.all(sql, (err, row) => {
@@ -188,7 +188,7 @@ app.get("/quiznames/", (req, res, next) => {
     }
 });
 
-app.post("/quiz_name/:quizName", async (req, res, next) => {
+app.post("/quiz_name/:quizName", async (req, res) => {
     const sql = 'INSERT INTO quizes (quiz_name, quiz_passing) VALUES (?,0)'
     const params = [req.params.quizName]
     const sql2 = `SELECT quiz_id FROM quizes WHERE quiz_name = ?`
@@ -205,7 +205,7 @@ app.post("/quiz_name/:quizName", async (req, res, next) => {
     }
 })
 
-app.get("/results/", (req, res, next) => {
+app.get("/results/", (req, res) => {
     const sql = "select * from result"
     try {
         db.all(sql, (err, row) => {
@@ -219,7 +219,7 @@ app.get("/results/", (req, res, next) => {
     }
 });
 
-app.post("/result/", (req, res, next) => {
+app.post("/result/", (req, res) => {
     const data = {
         result: req.body.result,
         question_id: req.body.question_id,
@@ -228,7 +228,7 @@ app.post("/result/", (req, res, next) => {
     const sql = 'REPLACE INTO result (result, question_id, user_id) VALUES (?,?,?)'
     const params = [data.result, data.question_id, data.user_id]
     try {
-        db.run(sql, params, function (err, result) {
+        db.run(sql, params, function () {
             res.json({
                 "message": "success",
                 "result": data.result,
@@ -241,7 +241,7 @@ app.post("/result/", (req, res, next) => {
     }
 })
 
-app.post("/results/", (req, res, next) => {
+app.post("/results/", (req, res) => {
     const results = req.body.results
     const user_id = req.body.user_id
     const sql = 'REPLACE INTO result (result, question_id, user_id) VALUES (?,?,?)'
@@ -259,12 +259,12 @@ app.post("/results/", (req, res, next) => {
     }
 })
 
-app.post("/quiz_question/", async (req, res, next) => {
+app.post("/quiz_question/", async (req, res) => {
     const data = req.body
     let questionId
 
     const sql1 = 'INSERT INTO questions (question, correct_answer, quiz_id) VALUES (?,?,?)'
-    var params1 = [data.question, data.correct_answer, data.quiz_id]
+    let params1 = [data.question, data.correct_answer, data.quiz_id]
 
     const sql2 = 'SELECT question_id FROM questions q WHERE q.question = ?'
     const params2 = [data.question]
@@ -277,7 +277,7 @@ app.post("/quiz_question/", async (req, res, next) => {
         questionId = result2[0].question_id
         for (let i = 0; i < data.answers.length; i++) {
             console.log("q_id " + questionId + "  " + data.answers[i].answer)
-            var params3 = [data.answers[i].answer, questionId]
+            let params3 = [data.answers[i].answer, questionId]
             db.run(sql3, params3, function (err, result) {
             })
         }
@@ -289,13 +289,13 @@ app.post("/quiz_question/", async (req, res, next) => {
     }
 })
 
-app.delete("/questions/:questionId", async (req, res, next) => {
+app.delete("/questions/:questionId", async (req, res) => {
     const sql1 = 'DELETE FROM answers WHERE question_id = ?;'
     const sql2 = 'DELETE FROM questions WHERE question_id = ?;'
     const params = [req.params.questionId]
     try {
         await dbAllPromise(sql1, params)
-        db.all(sql2, params, (err) => {
+        db.all(sql2, params, () => {
         });
         res.json({
             "message": "success"
@@ -305,7 +305,7 @@ app.delete("/questions/:questionId", async (req, res, next) => {
     }
 });
 
-app.delete("/quizes/:quizId", (req, res, next) => {
+app.delete("/quizes/:quizId", (req, res) => {
     const sql = `DELETE FROM answers
                     WHERE question_id IN(
                     SELECT question_id FROM questions q
@@ -316,23 +316,20 @@ app.delete("/quizes/:quizId", (req, res, next) => {
     const sql3 = 'DELETE FROM quizes WHERE quiz_id = ?;'
     const params = [req.params.quizId]
     try {
-        db.all(sql, params, (err, row) => {
-        });
-        db.all(sql2, params, (err) => {
-        });
-        db.all(sql3, params, (err) => {
-        });
+        db.all(sql, params)
+        db.all(sql2, params)
+        db.all(sql3, params)
         res.json({"message": "success"})
     } catch (err) {
         errorHandler(err, res)
     }
 });
 
-app.put("/passing/:quiz_id/:passingNumber", (req, res, next) => {
+app.put("/passing/:quiz_id/:passingNumber", (req, res) => {
     const sql = 'UPDATE quizes SET quiz_passing = ? WHERE quiz_id = ?;'
     const params = [req.params.passingNumber, req.params.quiz_id]
     try {
-        db.run(sql, params, (err, rows) => {
+        db.run(sql, params, () => {
             res.json({
                 "message": "success"
             })
@@ -342,7 +339,7 @@ app.put("/passing/:quiz_id/:passingNumber", (req, res, next) => {
     }
 });
 
-app.get("/passing/:quiz_id", (req, res, next) => {
+app.get("/passing/:quiz_id", (req, res) => {
     const sql = 'SELECT quiz_passing FROM quizes WHERE quiz_id = ?;'
     const params = [req.params.quiz_id]
     try {
@@ -357,7 +354,7 @@ app.get("/passing/:quiz_id", (req, res, next) => {
     }
 });
 
-app.post("/login/", (req, res, next) => {
+app.post("/login/", (req, res) => {
     const sql = 'SELECT * FROM users WHERE user_username = ? AND user_password = ?;'
     const params = [req.body.username, req.body.password]
     try {
@@ -372,12 +369,12 @@ app.post("/login/", (req, res, next) => {
     }
 });
 
-app.post("/sign-up/", (req, res, next) => {
+app.post("/sign-up/", (req, res) => {
     const data = req.body
     const sql = 'INSERT INTO users (user_username, user_password, user_role) VALUES (?,?,?);'
     const params = [data.username, data.password, data.role]
     try {
-        db.all(sql, params, (err, rows) => {
+        db.all(sql, params, () => {
             res.json({
                 "message": "success"
             })
@@ -387,7 +384,7 @@ app.post("/sign-up/", (req, res, next) => {
     }
 });
 
-app.get("/classes/", (req, res, next) => {
+app.get("/classes/", (req, res) => {
     const sql = "select * from classes"
     try {
         db.all(sql, (err, rows) => {
@@ -402,11 +399,11 @@ app.get("/classes/", (req, res, next) => {
 });
 
 
-app.post("/classes/:className", (req, res, next) => {
+app.post("/classes/:className", (req, res) => {
     const sql = 'INSERT INTO classes (classes_name) VALUES (?);'
     const params = [req.params.className]
     try {
-        db.all(sql, params, (err, rows) => {
+        db.all(sql, params, () => {
             res.json({
                 "message": "success"
             })
@@ -416,7 +413,7 @@ app.post("/classes/:className", (req, res, next) => {
     }
 });
 
-app.get("/students/:classId", (req, res, next) => {
+app.get("/students/:classId", (req, res) => {
     const sql = `SELECT * FROM users u
                     INNER JOIN users_classes uc ON u.user_id = uc.user_id
                     where uc.classes_id = ?;`
@@ -433,7 +430,7 @@ app.get("/students/:classId", (req, res, next) => {
     }
 });
 
-app.patch("/classes/add_students/", async (req, res, next) => {
+app.patch("/classes/add_students/", async (req, res) => {
     const sql1 = 'DELETE FROM users_classes where classes_id = ?;'
     const sql2 = 'INSERT INTO users_classes (user_id, classes_id) VALUES (?,?);'
     const data = req.body
@@ -451,7 +448,7 @@ app.patch("/classes/add_students/", async (req, res, next) => {
 });
 
 
-app.get("/user_statistics/users/:userId", (req, res, next) => {
+app.get("/user_statistics/users/:userId", (req, res) => {
     const sql = `SELECT quiz.quiz_name, SUM(result) AS result,COUNT(*) AS 'n_questions',
                      CASE WHEN SUM(result) < (COUNT(q.question_id))*quiz.quiz_passing/100 THEN 0 ELSE 1 END passed
                      FROM result r
@@ -473,7 +470,7 @@ app.get("/user_statistics/users/:userId", (req, res, next) => {
     }
 });
 
-app.get("/user_statistics/", (req, res, next) => {
+app.get("/user_statistics/", (req, res) => {
     const sql = `SELECT q.question, q.correct_answer, r.result FROM result r
                     INNER JOIN questions q ON r.question_id = q.question_id
                     WHERE q.quiz_id = ? AND r.user_id = ?;`
@@ -491,7 +488,7 @@ app.get("/user_statistics/", (req, res, next) => {
     }
 });
 
-app.get("/class_statistics/:classId", async (req, res, next) => {
+app.get("/class_statistics/:classId", async (req, res) => {
     const sql1 = `SELECT q.quiz_id, quiz_name FROM quizes q
                     INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
                     WHERE cq.classes_id=?;`
