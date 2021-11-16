@@ -249,7 +249,6 @@ app.post("/results/", (req, res, next) => {
         for (let i = 0; i < results.length; i++) {
             let result = results[i].result
             let question_id = results[i].question_id
-            console.log(result)
             db.run(sql, [result, question_id, user_id])
         }
         res.json({
