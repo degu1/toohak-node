@@ -447,6 +447,37 @@ app.patch("/classes/add_students/", async (req, res) => {
     }
 });
 
+app.delete("/classes/:classesId", async (req, res) => {
+    const sql1 = "DELETE FROM users_classes where classes_id = ?;"
+    const sql2 = "DELETE FROM classes_quizes where classes_id = ?;"
+    const sql3 = "DELETE FROM classes where classes_id = ?;"
+    const classesId = req.params.classesId
+    try {
+        await dbAllPromise(sql1, [classesId])
+        await dbAllPromise(sql2,[classesId])
+        await dbAllPromise(sql3, [classesId])
+        res.json({
+            "message": "success"
+        })
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
+
+app.delete("/classes_user/:classesId/:userId",(req, res) => {
+    const sql1 = "DELETE FROM users_classes where classes_id = ? AND user_id = ?;"
+    const classesId = req.params.classesId
+    const userId = req.params.userId
+    try {
+        db.run(sql1, [classesId, userId])
+        res.json({
+            "message": "success"
+        })
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
+
 
 app.get("/user_statistics/users/:userId", (req, res) => {
     const sql = `SELECT quiz.quiz_name, SUM(result) AS result,COUNT(*) AS 'n_questions',
@@ -520,5 +551,48 @@ app.get("/class_statistics/:classId", async (req, res) => {
     } catch (err) {
         console.error(err.message)
         res.status(400).json({"error": err.message})
+    }
+});
+
+app.get("/class_statistics_unfinished/:classId", (req, res) => {
+    const sql = `SELECT u.user_id, u.user_username, quizes.quiz_id, quizes.quiz_name, u.user_id || '&'|| quizes.quiz_id  AS combinde FROM users_classes uc
+                    INNER JOIN classes_quizes cq on uc.classes_id = cq.classes_id
+                    INNER JOIN users u ON uc.user_id = u.user_id
+                    INNER JOIN quizes ON quizes.quiz_id = cq.quiz_id
+                    WHERE uc.classes_id = ? AND combinde NOT IN (
+                    SELECT r.user_id || '&' || quiz.quiz_id AS combinde
+                    FROM result r
+                    INNER JOIN questions q on q.question_id = r.question_id
+                    INNER JOIN users u on u.user_id = r.user_id
+                    INNER JOIN users_classes uc on u.user_id = uc.user_id
+                    INNER JOIN quizes quiz ON quiz.quiz_id = q.quiz_id
+                    WHERE uc.classes_id = ?
+                    GROUP BY combinde);`
+    const params = [req.params.classId, req.params.classId]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "users-quizes": rows
+            })
+        });
+    } catch (err) {
+        console.error(err.message)
+        res.status(400).json({"error": err.message})
+    }
+});
+
+app.get("/users", (req, res) => {
+    const sql = "select * from users"
+    const params = []
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "users": rows
+            })
+        });
+    } catch (err) {
+        errorHandler(err, res)
     }
 });
