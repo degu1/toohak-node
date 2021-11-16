@@ -581,3 +581,18 @@ app.get("/class_statistics_unfinished/:classId", (req, res) => {
         res.status(400).json({"error": err.message})
     }
 });
+
+app.get("/users", (req, res) => {
+    const sql = "select * from users"
+    const params = []
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "users": rows
+            })
+        });
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
