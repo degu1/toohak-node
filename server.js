@@ -390,7 +390,7 @@ app.get("/classes/", (req, res) => {
         db.all(sql, (err, rows) => {
             res.json({
                 "message": "success",
-                "quizes": rows
+                "classes": rows
             })
         });
     } catch (err) {
