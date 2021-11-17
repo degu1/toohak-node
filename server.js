@@ -565,3 +565,14 @@ app.get("/classes_quizes/:classId", (req, res) => {
         errorHandler(err, res)
     }
 });
+
+app.get("/users", (req, res) => {
+    const sql = "select * from users"
+    try {
+        db.all(sql, (err, rows) => {
+            res.json({"message": "success", "users": rows})
+        });
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
