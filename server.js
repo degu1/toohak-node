@@ -3,7 +3,6 @@ const app = express()
 const cors = require('cors')
 const db = require("./database.js")
 
-
 app.use(cors())
 app.use(express.static('public'))
 
@@ -36,7 +35,7 @@ async function dbRunPromise(query, params) {
 }
 
 function errorHandler(err, res) {
-    console.error(err.message)
+    console.error('Error message: ' + err.message)
     res.status(400).json({"error": err.message})
 }
 
@@ -559,6 +558,23 @@ app.get("/classes_quizes/:classId", (req, res) => {
             res.json({
                 "message": "success",
                 "quizes": rows
+            })
+        });
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
+
+app.delete("/classes_quizes/", (req, res) => {
+    const sql = `DELETE FROM classes_quizes WHERE classes_id = ? AND quiz_id = ?;`
+    const query= req.query
+    let classId = query.class_id
+    let quizId = query.quiz_id
+    try {
+        if(classId == undefined || quizId == undefined) throw new Error('Error, params missing')
+        db.all(sql, [classId, quizId], (err, rows) => {
+            res.json({
+                "message": "success"
             })
         });
     } catch (err) {
