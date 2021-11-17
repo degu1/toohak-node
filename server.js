@@ -548,3 +548,20 @@ app.get("/class_statistics/:classId", async (req, res) => {
         res.status(400).json({"error": err.message})
     }
 });
+
+app.get("/classes_quizes/:classId", (req, res) => {
+    const sql = `SELECT * FROM quizes q
+                    INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
+                    WHERE cq.classes_id = ?;`
+    const params = [req.params.classId]
+    try {
+        db.all(sql, params, (err, rows) => {
+            res.json({
+                "message": "success",
+                "quizes": rows
+            })
+        });
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
