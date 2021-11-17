@@ -398,10 +398,37 @@ app.get("/classes/", (req, res) => {
     }
 });
 
-
 app.post("/classes/:className", (req, res) => {
     const sql = 'INSERT INTO classes (classes_name) VALUES (?);'
     const params = [req.params.className]
+    try {
+        db.all(sql, params, () => {
+            res.json({
+                "message": "success"
+            })
+        });
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
+
+app.post("/classes_users/:classId/:userId", (req, res) => {
+    const sql = 'INSERT INTO users_classes (classes_id, user_id) VALUES (?,?);'
+    const params = [req.params.classId, req.params.userId]
+    try {
+        db.all(sql, params, () => {
+            res.json({
+                "message": "success"
+            })
+        });
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
+
+app.delete("/classes_users/:classId/:userId", (req, res) => {
+    const sql = 'DELETE FROM users_classes WHERE classes_id = ? AND user_id = ?;'
+    const params = [req.params.classId, req.params.userId]
     try {
         db.all(sql, params, () => {
             res.json({
@@ -446,7 +473,6 @@ app.patch("/classes/add_students/", async (req, res) => {
         errorHandler(err, res)
     }
 });
-
 
 app.get("/user_statistics/users/:userId", (req, res) => {
     const sql = `SELECT quiz.quiz_name, SUM(result) AS result,COUNT(*) AS 'n_questions',
