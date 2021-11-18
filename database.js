@@ -24,7 +24,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                         VALUES 
                         ("student","password","Dennis"),
                         ("student","password","Milad"),
-                        ("student","password","Jonas")
+                        ("student","password","Jonas"),
+                        ("teacher","password","Jerry")
                         `)
             }
         })
