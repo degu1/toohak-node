@@ -165,6 +165,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             classes_quizes_id INTEGER PRIMARY KEY,
             quiz_id INTEGER NOT NULL,
             classes_id INTEGER NOT NULL,
+            UNIQUE (classes_id, quiz_id),
             FOREIGN KEY (quiz_id) REFERENCES quizes (quiz_id),
             FOREIGN KEY (classes_id) REFERENCES classes (classes_id)
             )`,(err) => {
