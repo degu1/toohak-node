@@ -549,7 +549,7 @@ app.get("/class_statistics/:classId", async (req, res) => {
     const sql1 = `SELECT q.quiz_id, quiz_name FROM quizes q
                     INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
                     WHERE cq.classes_id=?;`
-    const sql2 = `SELECT 1 AS atempeted, SUM(result), r.user_id, u.user_username, CASE
+    const sql2 = `SELECT 1 AS atempeted, SUM(result) AS sum_result, r.user_id, u.user_username, CASE
                     WHEN SUM(result) < COUNT(q.quiz_id)*quiz.quiz_passing/100 THEN 0 ELSE 1 END pass
                     FROM result r
                     INNER JOIN questions q on q.question_id = r.question_id
