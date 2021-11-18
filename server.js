@@ -674,6 +674,22 @@ app.delete("/classes_quizes/", (req, res) => {
     }
 });
 
+app.post("/classes_quizes/", (req, res) => {
+    const sql = `INSERT INTO classes_quizes (classes_id, quiz_id) VALUES (?,?);`
+    let classId = req.query.class_id
+    let quizId = req.query.quiz_id
+    try {
+        if(classId == undefined || quizId == undefined) throw new Error('Error, params missing')
+        db.all(sql, [classId, quizId], (err, rows) => {
+            res.json({
+                "message": "success"
+            })
+        });
+    } catch (err) {
+        errorHandler(err, res)
+    }
+});
+
 app.get("/users", (req, res) => {
     const sql = "select * from users"
     try {
