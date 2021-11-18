@@ -517,7 +517,7 @@ app.get("/class_statistics/:classId", async (req, res) => {
     const sql1 = `SELECT q.quiz_id, quiz_name FROM quizes q
                     INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
                     WHERE cq.classes_id=?;`
-    const sql2 = `SELECT SUM(result), r.user_id, u.user_username, CASE
+    const sql2 = `SELECT 1 AS atempeted, SUM(result), r.user_id, u.user_username, CASE
                     WHEN SUM(result) < COUNT(q.quiz_id)*quiz.quiz_passing/100 THEN 0 ELSE 1 END pass
                     FROM result r
                     INNER JOIN questions q on q.question_id = r.question_id
@@ -526,15 +526,33 @@ app.get("/class_statistics/:classId", async (req, res) => {
                     INNER JOIN quizes quiz ON quiz.quiz_id = q.quiz_id
                     WHERE quiz.quiz_id = ? AND uc.classes_id = ?
                     GROUP BY r.user_id;`
+    const sql3 = `SELECT 0 AS atempeted, u.user_id, u.user_username, quizes.quiz_id, quizes.quiz_name, u.user_id || '&'|| quizes.quiz_id  AS combinde FROM users_classes uc
+                    INNER JOIN classes_quizes cq on uc.classes_id = cq.classes_id
+                    INNER JOIN users u ON uc.user_id = u.user_id
+                    INNER JOIN quizes ON quizes.quiz_id = cq.quiz_id
+                    WHERE uc.classes_id = ? AND cq.quiz_id = ? AND combinde NOT IN (
+                    SELECT r.user_id || '&' || quiz.quiz_id AS combinde
+                    FROM result r
+                    INNER JOIN questions q on q.question_id = r.question_id
+                    INNER JOIN users u on u.user_id = r.user_id
+                    INNER JOIN users_classes uc on u.user_id = uc.user_id
+                    INNER JOIN quizes quiz ON quiz.quiz_id = q.quiz_id
+                    WHERE uc.classes_id = ?
+                    GROUP BY combinde);`
     const params = [req.params.classId]
     try {
         await dbAllPromise(sql1, params)
             .then(async function (rows) {
                 for (let i = 0; i < rows.length; i++) {
-                    await dbAllPromise(sql2, [rows[i].quiz_id, req.params.classId])
+                    let quizId = rows[i].quiz_id
+                    await dbAllPromise(sql2, [quizId, req.params.classId])
                         .then((rows2) => {
                             rows[i].results = rows2
                         })
+                    await dbAllPromise(sql3, [req.params.classId, quizId, req.params.classId])
+                        .then((rows3) =>{
+                            rows[i].results.push.apply(rows[i].results,rows3)
+                    })
                 }
                 res.json({
                     "message": "success",
@@ -567,9 +585,8 @@ app.get("/classes_quizes/:classId", (req, res) => {
 
 app.delete("/classes_quizes/", (req, res) => {
     const sql = `DELETE FROM classes_quizes WHERE classes_id = ? AND quiz_id = ?;`
-    const query= req.query
-    let classId = query.class_id
-    let quizId = query.quiz_id
+    let classId = req.query.class_id
+    let quizId = req.query.quiz_id
     try {
         if(classId == undefined || quizId == undefined) throw new Error('Error, params missing')
         db.all(sql, [classId, quizId], (err, rows) => {
