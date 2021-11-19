@@ -13,7 +13,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             user_id INTEGER PRIMARY KEY,
             user_role TEXT,
             user_password TEXT,
-            user_username TEXT
+            user_username TEXT UNIQUE
             )`,(err) => {
             if (err) {
                 // Table already created
