@@ -196,12 +196,13 @@ app.post("/quiz_name/:quizName", async (req, res) => {
     const sql2 = `SELECT quiz_id FROM quizes WHERE quiz_name = ?`
     try {
         await dbRunPromise(sql, params)
-        db.all(sql2, params, function (err, result) {
-            res.json({
-                "message": "success",
-                "quiz_id": result[0].quiz_id
+        await dbAllPromise(sql2, params)
+            .then(rows => {
+                res.json({
+                    "message": "success",
+                    "quiz_id": rows[0].quiz_id
+                })
             })
-        });
     } catch (err) {
         errorHandler(err, res)
     }
@@ -358,23 +359,25 @@ app.get("/passing/:quiz_id", (req, res) => {
 app.post("/login/", async (req, res) => {
     const sql = 'SELECT * FROM users WHERE user_username = ? AND user_password = ?;'
     const params = [req.body.username, req.body.password]
-        await dbAllPromise(sql, params).then((rows) => {
-            res.json({
-                "message": "success",
-                "answers": rows
-            })
-        }).catch ((err) => {errorHandler(err, res)})
+    await dbAllPromise(sql, params).then((rows) => {
+        res.json({
+            "message": "success",
+            "answers": rows
+        })
+    }).catch((err) => {
+        errorHandler(err, res)
+    })
 });
 
 app.post("/sign-up/", async (req, res) => {
     const data = req.body
     const sql = 'INSERT INTO users (user_username, user_password, user_role) VALUES (?,?,?);'
     const params = [data.username, data.password, data.role]
-        await dbAllPromise(sql, params).then(() => {
-            res.json({
-                "message": "success"
-            })
-        }).catch((err) => errorHandler(err, res))
+    await dbAllPromise(sql, params).then(() => {
+        res.json({
+            "message": "success"
+        })
+    }).catch((err) => errorHandler(err, res))
 });
 
 app.get("/classes/", (req, res) => {
@@ -391,18 +394,16 @@ app.get("/classes/", (req, res) => {
     }
 });
 
-app.post("/classes/:className", (req, res) => {
+app.post("/classes/:className", async (req, res) => {
     const sql = 'INSERT INTO classes (classes_name) VALUES (?);'
     const params = [req.params.className]
-    try {
-        db.all(sql, params, () => {
+    await dbRunPromise(sql, params)
+        .then(() => {
             res.json({
                 "message": "success"
             })
-        });
-    } catch (err) {
-        errorHandler(err, res)
-    }
+        })
+        .catch((err) => errorHandler(err, res))
 });
 
 app.post("/classes_users/:classId/:userId", (req, res) => {
