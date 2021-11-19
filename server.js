@@ -36,7 +36,7 @@ async function dbRunPromise(query, params) {
 
 function errorHandler(err, res) {
     console.error('Error message: ' + err.message)
-    if(err.errno ===19){
+    if (err.errno === 19) {
         res.status(403).json({"error": err.message})
     }
     res.status(400).json({"error": err.message})
@@ -356,37 +356,27 @@ app.get("/passing/:quiz_id", (req, res) => {
     }
 });
 
-app.post("/login/", (req, res) => {
+app.post("/login/", async (req, res) => {
     const sql = 'SELECT * FROM users WHERE user_username = ? AND user_password = ?;'
     const params = [req.body.username, req.body.password]
-    try {
-        db.all(sql, params, (err, rows) => {
+        await dbAllPromise(sql, params).then((rows) => {
             res.json({
                 "message": "success",
                 "answers": rows
             })
-        });
-    } catch (err) {
-        errorHandler(err, res)
-    }
+        }).catch ((err) => {errorHandler(err, res)})
 });
 
 app.post("/sign-up/", async (req, res) => {
     const data = req.body
     const sql = 'INSERT INTO users (user_username, user_password, user_role) VALUES (?,?,?);'
     const params = [data.username, data.password, data.role]
-    try {
         await dbAllPromise(sql, params).then(() => {
             res.json({
                 "message": "success"
             })
-        })
-    } catch
-        (err) {
-        errorHandler(err, res)
-    }
-})
-;
+        }).catch((err) => errorHandler(err, res))
+});
 
 app.get("/classes/", (req, res) => {
     const sql = "select * from classes"
