@@ -31,7 +31,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         })
         db.run(`CREATE TABLE classes (
             classes_id INTEGER PRIMARY KEY,
-            classes_name TEXT
+            classes_name TEXT UNIQUE
             )`,(err) => {
             if (err) {
                 // Table already created
@@ -88,7 +88,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         db.run(`   
             CREATE TABLE questions (
             question_id INTEGER PRIMARY KEY,
-            question TEXT,
+            question TEXT UNIQUE,
             correct_answer TEXT,
             quiz_id INTEGER NOT NULL,
             FOREIGN KEY (quiz_id) REFERENCES quizes (quiz_id)
