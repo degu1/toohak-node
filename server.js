@@ -272,7 +272,7 @@ app.post("/quiz_question/", async (req, res) => {
     const sql2 = 'SELECT question_id FROM questions q WHERE q.question = ?'
     const params2 = [data.question]
 
-    const sql3 = 'INSERT INTO answers (My Requestanswer, question_id) VALUES (?,?);'
+    const sql3 = 'INSERT INTO answers (answer, question_id) VALUES (?,?);'
 
     try {
         await dbAllPromise(sql1, params1)
@@ -341,9 +341,9 @@ app.put("/passing/:quiz_id/:passingNumber", (req, res) => {
     }
 });
 
-app.get("/passing/:quiz_id", (req, res) => {
+app.get("/passing/:quizId", (req, res) => {
     const sql = 'SELECT quiz_passing FROM quizes WHERE quiz_id = ?;'
-    const params = [req.params.quiz_id]
+    const params = [req.params.quizId]
     try {
         db.all(sql, params, (err, rows) => {
             res.json({
@@ -544,6 +544,7 @@ app.get("/class_statistics/:classId", async (req, res) => {
     const sql1 = `SELECT q.quiz_id, quiz_name FROM quizes q
                     INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
                     WHERE cq.classes_id=?;`
+    // sql2 gives a table of users that has a result on a quiz
     const sql2 = `SELECT 1 AS atempeted, SUM(result) AS sum_result, r.user_id, u.user_username, CASE
                     WHEN SUM(result) < COUNT(q.quiz_id)*quiz.quiz_passing/100 THEN 0 ELSE 1 END pass, COUNT(q.quiz_id) AS n_questions
                     FROM result r
@@ -553,6 +554,7 @@ app.get("/class_statistics/:classId", async (req, res) => {
                     INNER JOIN quizes quiz ON quiz.quiz_id = q.quiz_id
                     WHERE quiz.quiz_id = ? AND uc.classes_id = ?
                     GROUP BY r.user_id;`
+    // sql3 gives a table of users that has not tried a quiz assigned to a class
     const sql3 = `SELECT 0 AS atempeted, u.user_id, u.user_username, quizes.quiz_id, quizes.quiz_name, u.user_id || '&'|| quizes.quiz_id  AS combinde FROM users_classes uc
                     INNER JOIN classes_quizes cq on uc.classes_id = cq.classes_id
                     INNER JOIN users u ON uc.user_id = u.user_id
