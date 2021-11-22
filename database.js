@@ -88,7 +88,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         db.run(`   
             CREATE TABLE questions (
             question_id INTEGER PRIMARY KEY,
-            question TEXT UNIQUE,
+            question TEXT,
             correct_answer TEXT,
             quiz_id INTEGER NOT NULL,
             FOREIGN KEY (quiz_id) REFERENCES quizes (quiz_id)
