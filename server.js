@@ -36,6 +36,9 @@ async function dbRunPromise(query, params) {
 
 function errorHandler(err, res) {
     console.error('Error message: ' + err.message)
+    if (err.errno === 19) {
+        res.status(403).json({"error": err.message})
+    }
     res.status(400).json({"error": err.message})
 }
 
@@ -193,12 +196,13 @@ app.post("/quiz_name/:quizName", async (req, res) => {
     const sql2 = `SELECT quiz_id FROM quizes WHERE quiz_name = ?`
     try {
         await dbRunPromise(sql, params)
-        db.all(sql2, params, function (err, result) {
-            res.json({
-                "message": "success",
-                "quiz_id": result[0].quiz_id
+        await dbAllPromise(sql2, params)
+            .then(rows => {
+                res.json({
+                    "message": "success",
+                    "quiz_id": rows[0].quiz_id
+                })
             })
-        });
     } catch (err) {
         errorHandler(err, res)
     }
@@ -275,7 +279,6 @@ app.post("/quiz_question/", async (req, res) => {
         let result2 = await dbAllPromise(sql2, params2)
         questionId = result2[0].question_id
         for (let i = 0; i < data.answers.length; i++) {
-            console.log("q_id " + questionId + "  " + data.answers[i].answer)
             let params3 = [data.answers[i].answer, questionId]
             db.run(sql3, params3, function (err, result) {
             })
@@ -338,9 +341,9 @@ app.put("/passing/:quiz_id/:passingNumber", (req, res) => {
     }
 });
 
-app.get("/passing/:quiz_id", (req, res) => {
+app.get("/passing/:quizId", (req, res) => {
     const sql = 'SELECT quiz_passing FROM quizes WHERE quiz_id = ?;'
-    const params = [req.params.quiz_id]
+    const params = [req.params.quizId]
     try {
         db.all(sql, params, (err, rows) => {
             res.json({
@@ -353,34 +356,28 @@ app.get("/passing/:quiz_id", (req, res) => {
     }
 });
 
-app.post("/login/", (req, res) => {
+app.post("/login/", async (req, res) => {
     const sql = 'SELECT * FROM users WHERE user_username = ? AND user_password = ?;'
     const params = [req.body.username, req.body.password]
-    try {
-        db.all(sql, params, (err, rows) => {
-            res.json({
-                "message": "success",
-                "answers": rows
-            })
-        });
-    } catch (err) {
+    await dbAllPromise(sql, params).then((rows) => {
+        res.json({
+            "message": "success",
+            "answers": rows
+        })
+    }).catch((err) => {
         errorHandler(err, res)
-    }
+    })
 });
 
-app.post("/sign-up/", (req, res) => {
+app.post("/sign-up/", async (req, res) => {
     const data = req.body
     const sql = 'INSERT INTO users (user_username, user_password, user_role) VALUES (?,?,?);'
     const params = [data.username, data.password, data.role]
-    try {
-        db.all(sql, params, () => {
-            res.json({
-                "message": "success"
-            })
-        });
-    } catch (err) {
-        errorHandler(err, res)
-    }
+    await dbAllPromise(sql, params).then(() => {
+        res.json({
+            "message": "success"
+        })
+    }).catch((err) => errorHandler(err, res))
 });
 
 app.get("/classes/", (req, res) => {
@@ -397,18 +394,16 @@ app.get("/classes/", (req, res) => {
     }
 });
 
-app.post("/classes/:className", (req, res) => {
+app.post("/classes/:className", async (req, res) => {
     const sql = 'INSERT INTO classes (classes_name) VALUES (?);'
     const params = [req.params.className]
-    try {
-        db.all(sql, params, () => {
+    await dbRunPromise(sql, params)
+        .then(() => {
             res.json({
                 "message": "success"
             })
-        });
-    } catch (err) {
-        errorHandler(err, res)
-    }
+        })
+        .catch((err) => errorHandler(err, res))
 });
 
 app.post("/classes_users/:classId/:userId", (req, res) => {
@@ -480,7 +475,7 @@ app.delete("/classes/:classesId", async (req, res) => {
     const classesId = req.params.classesId
     try {
         await dbAllPromise(sql1, [classesId])
-        await dbAllPromise(sql2,[classesId])
+        await dbAllPromise(sql2, [classesId])
         await dbAllPromise(sql3, [classesId])
         res.json({
             "message": "success"
@@ -490,7 +485,7 @@ app.delete("/classes/:classesId", async (req, res) => {
     }
 });
 
-app.delete("/classes_user/:classesId/:userId",(req, res) => {
+app.delete("/classes_user/:classesId/:userId", (req, res) => {
     const sql1 = "DELETE FROM users_classes where classes_id = ? AND user_id = ?;"
     const classesId = req.params.classesId
     const userId = req.params.userId
@@ -549,6 +544,7 @@ app.get("/class_statistics/:classId", async (req, res) => {
     const sql1 = `SELECT q.quiz_id, quiz_name FROM quizes q
                     INNER JOIN classes_quizes cq ON q.quiz_id = cq.quiz_id
                     WHERE cq.classes_id=?;`
+    // sql2 gives a table of users that has a result on a quiz
     const sql2 = `SELECT 1 AS atempeted, SUM(result) AS sum_result, r.user_id, u.user_username, CASE
                     WHEN SUM(result) < COUNT(q.quiz_id)*quiz.quiz_passing/100 THEN 0 ELSE 1 END pass, COUNT(q.quiz_id) AS n_questions
                     FROM result r
@@ -558,6 +554,7 @@ app.get("/class_statistics/:classId", async (req, res) => {
                     INNER JOIN quizes quiz ON quiz.quiz_id = q.quiz_id
                     WHERE quiz.quiz_id = ? AND uc.classes_id = ?
                     GROUP BY r.user_id;`
+    // sql3 gives a table of users that has not tried a quiz assigned to a class
     const sql3 = `SELECT 0 AS atempeted, u.user_id, u.user_username, quizes.quiz_id, quizes.quiz_name, u.user_id || '&'|| quizes.quiz_id  AS combinde FROM users_classes uc
                     INNER JOIN classes_quizes cq on uc.classes_id = cq.classes_id
                     INNER JOIN users u ON uc.user_id = u.user_id
@@ -582,9 +579,9 @@ app.get("/class_statistics/:classId", async (req, res) => {
                             rows[i].results = rows2
                         })
                     await dbAllPromise(sql3, [req.params.classId, quizId, req.params.classId])
-                        .then((rows3) =>{
-                            rows[i].results.push.apply(rows[i].results,rows3)
-                    })
+                        .then((rows3) => {
+                            rows[i].results.push.apply(rows[i].results, rows3)
+                        })
                 }
                 res.json({
                     "message": "success",
@@ -663,7 +660,7 @@ app.delete("/classes_quizes/", (req, res) => {
     let classId = req.query.class_id
     let quizId = req.query.quiz_id
     try {
-        if(classId == undefined || quizId == undefined) throw new Error('Error, params missing')
+        if (classId == undefined || quizId == undefined) throw new Error('Error, params missing')
         db.all(sql, [classId, quizId], (err, rows) => {
             res.json({
                 "message": "success"
@@ -679,7 +676,7 @@ app.post("/classes_quizes/", (req, res) => {
     let classId = req.query.class_id
     let quizId = req.query.quiz_id
     try {
-        if(classId == undefined || quizId == undefined) throw new Error('Error, params missing')
+        if (classId == undefined || quizId == undefined) throw new Error('Error, params missing')
         db.all(sql, [classId, quizId], (err, rows) => {
             res.json({
                 "message": "success"
