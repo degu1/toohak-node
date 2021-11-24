@@ -191,7 +191,7 @@ app.get("/quiznames/", (req, res) => {
 });
 
 app.post("/quiz_name/:quizName", async (req, res) => {
-    const sql = 'INSERT INTO quizes (quiz_name, quiz_passing) VALUES (?,0)'
+    const sql = 'INSERT INTO quizes (quiz_name, quiz_passing) VALUES (?,70)'
     const params = [req.params.quizName]
     const sql2 = `SELECT quiz_id FROM quizes WHERE quiz_name = ?`
     try {
@@ -498,7 +498,6 @@ app.delete("/classes_user/:classesId/:userId", (req, res) => {
         errorHandler(err, res)
     }
 });
-
 
 app.get("/user_statistics/users/:userId", (req, res) => {
     const sql = `SELECT quiz.quiz_name, SUM(result) AS result,COUNT(*) AS 'n_questions',
